@@ -8,74 +8,65 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final orders = OrderService.orders;
 
-    final failedItems =
-        orders.where((o) => o.status != "purchased").toList();
-
-    Map<String, int> count = {};
-    for (var o in orders) {
-      count[o.itemName] = (count[o.itemName] ?? 0) + o.quantity;
-    }
+    // ❌ Failed = not purchased
+    final failedItems = orders.where((o) => o.status != "purchased").toList();
 
     final shopTotals = OrderService.getTotalPerShop();
 
     return Scaffold(
       appBar: AppBar(title: const Text("End of Day Report")),
-      body: Padding(
+      backgroundColor: Colors.grey[100],
+
+      body: ListView(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        children: [
+          // 🔴 FAILED ITEMS
+          const Text(
+            "❌ Failed Items",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
 
-            const Text("❌ Failed Items",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
 
-            Expanded(
-              child: failedItems.isEmpty
-                  ? const Center(child: Text("No failed items 🎉"))
-                  : ListView(
-                      children: failedItems.map((o) {
-                        return ListTile(
-                          title: Text(o.itemName,
-                              style: const TextStyle(color: Colors.red)),
-                          subtitle: Text("Shop: ${o.shopName}"),
-                        );
-                      }).toList(),
-                    ),
-            ),
+          failedItems.isEmpty
+              ? const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Text("No failed items 🎉"),
+                  ),
+                )
+              : Column(
+                  children: failedItems.map((o) {
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.error, color: Colors.red),
+                        title: Text(o.itemName),
+                        subtitle: Text(o.shopName),
+                      ),
+                    );
+                  }).toList(),
+                ),
 
-            const Divider(),
+          const SizedBox(height: 15),
 
-            const Text("📊 Most Requested Items",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          // 💰 SHOP BILLING
+          const Text(
+            "💰 Shop Billing",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
 
-            Expanded(
-              child: ListView(
-                children: count.entries.map((e) {
-                  return ListTile(
-                    title: Text(e.key),
-                    trailing: Text(e.value.toString()),
-                  );
-                }).toList(),
+          const SizedBox(height: 8),
+
+          ...shopTotals.entries.map((e) {
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.store, color: Colors.blue),
+                title: Text(e.key),
+                trailing: Text("Rs. ${e.value.toStringAsFixed(2)}"),
               ),
-            ),
-
-            const Divider(),
-
-            const Text("💰 Shop Billing",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-            Expanded(
-              child: ListView(
-                children: shopTotals.entries.map((e) {
-                  return ListTile(
-                    title: Text(e.key),
-                    trailing: Text("Rs. ${e.value.toStringAsFixed(2)}"),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-        ),
+            );
+          }),
+        ],
       ),
     );
   }

@@ -10,42 +10,30 @@ class SupplierScreen extends StatefulWidget {
 }
 
 class _SupplierScreenState extends State<SupplierScreen> {
-
   void markAsPurchased(OrderModel order) async {
-    TextEditingController priceController = TextEditingController();
+    TextEditingController controller = TextEditingController();
 
     await showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Enter Purchase Price"),
-          content: TextField(
-            controller: priceController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(hintText: "Price"),
+      builder: (_) => AlertDialog(
+        title: const Text("Enter Price"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                order.status = "purchased";
+                order.purchasePrice = double.tryParse(controller.text) ?? 0;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                double price =
-                    double.tryParse(priceController.text) ?? 0;
-
-                setState(() {
-                  order.status = "purchased";
-                  order.purchasePrice = price;
-                });
-
-                Navigator.pop(context);
-              },
-              child: const Text("Save"),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -54,44 +42,32 @@ class _SupplierScreenState extends State<SupplierScreen> {
     final grouped = OrderService.getGroupedBySupplier();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Supplier Purchase List")),
+      appBar: AppBar(title: const Text("Suppliers")),
       body: ListView(
         children: grouped.entries.map((entry) {
           return ExpansionTile(
             title: Text(entry.key),
-            children: entry.value.map((order) {
-              return ListTile(
-                title: Text(
-                  order.itemName,
-                  style: TextStyle(
-                    color: order.status == "purchased"
-                        ? Colors.green
-                        : order.status == "not_available"
-                            ? Colors.red
-                            : Colors.black,
+            children: entry.value.map((o) {
+              return Card(
+                margin: const EdgeInsets.all(6),
+                child: ListTile(
+                  title: Text(o.itemName),
+                  subtitle: Text(o.shopName),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green),
+                        onPressed: () => markAsPurchased(o),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () {
+                          setState(() => o.status = "not_available");
+                        },
+                      ),
+                    ],
                   ),
-                ),
-                subtitle: Text(order.shopName),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("x${order.quantity}"),
-                    const SizedBox(width: 10),
-
-                    IconButton(
-                      icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () => markAsPurchased(order),
-                    ),
-
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          order.status = "not_available";
-                        });
-                      },
-                    ),
-                  ],
                 ),
               );
             }).toList(),

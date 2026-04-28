@@ -13,12 +13,10 @@ class ShopOwnerScreen extends StatefulWidget {
 }
 
 class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
-  final TextEditingController itemController = TextEditingController();
-  final TextEditingController qtyController = TextEditingController();
-
+  final itemController = TextEditingController();
+  final qtyController = TextEditingController();
   String? suggestion;
 
-  // 🔍 AI Suggestion Logic
   void checkSuggestion(String value) {
     if (value.trim().isEmpty) {
       setState(() => suggestion = null);
@@ -28,86 +26,76 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
     final result = SuggestionService.getSuggestion(value);
 
     setState(() {
-      suggestion = (result != null &&
-              result.toLowerCase() != value.toLowerCase())
+      suggestion =
+          (result != null && result.toLowerCase() != value.toLowerCase())
           ? result
           : null;
     });
   }
 
-  // ➕ Add Order
   void addOrder() {
     if (itemController.text.isEmpty || qtyController.text.isEmpty) return;
 
     OrderService.addOrder(
-  OrderModel(
-    itemName: itemController.text,
-    quantity: int.parse(qtyController.text),
-    shopName: widget.shopName,
-  ),
-);
+      OrderModel(
+        itemName: itemController.text,
+        quantity: int.parse(qtyController.text),
+        shopName: widget.shopName,
+      ),
+    );
 
     itemController.clear();
     qtyController.clear();
-
-    setState(() {
-      suggestion = null;
-    });
+    setState(() => suggestion = null);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Orders - ${widget.shopName}"),
-      ),
+      appBar: AppBar(title: Text(widget.shopName)),
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ITEM INPUT
-            TextField(
-              controller: itemController,
-              decoration: const InputDecoration(labelText: "Item"),
-              onChanged: checkSuggestion,
-            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: itemController,
+                      decoration: const InputDecoration(labelText: "Item Name"),
+                      onChanged: checkSuggestion,
+                    ),
 
-            // 💡 Suggestion UI
-            if (suggestion != null)
-              GestureDetector(
-                onTap: () {
-                  itemController.text = suggestion!;
-                  setState(() => suggestion = null);
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(top: 5),
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.grey[300],
-                  child: Text("Did you mean: $suggestion ?"),
+                    if (suggestion != null)
+                      ListTile(
+                        title: Text("Did you mean: $suggestion"),
+                        onTap: () {
+                          itemController.text = suggestion!;
+                          setState(() => suggestion = null);
+                        },
+                      ),
+
+                    TextField(
+                      controller: qtyController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: "Quantity"),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    ElevatedButton(
+                      onPressed: addOrder,
+                      child: const Text("Add Item"),
+                    ),
+                  ],
                 ),
               ),
-
-            const SizedBox(height: 10),
-
-            // QUANTITY INPUT
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Quantity"),
-              onChanged: (_) {
-                // 🔥 Hide suggestion when typing quantity
-                if (suggestion != null) {
-                  setState(() => suggestion = null);
-                }
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // ADD BUTTON
-            ElevatedButton(
-              onPressed: addOrder,
-              child: const Text("Add Order"),
             ),
           ],
         ),
