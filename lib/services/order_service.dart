@@ -7,24 +7,19 @@ class OrderService {
     orders.add(order);
   }
 
-  // 🔥 GROUP BY SUPPLIER (basic logic)
   static Map<String, List<OrderModel>> getGroupedBySupplier() {
     Map<String, List<OrderModel>> grouped = {};
 
     for (var order in orders) {
       String supplier = getSupplier(order.itemName);
 
-      if (!grouped.containsKey(supplier)) {
-        grouped[supplier] = [];
-      }
-
+      grouped.putIfAbsent(supplier, () => []);
       grouped[supplier]!.add(order);
     }
 
     return grouped;
   }
 
-  // 🔥 SIMPLE CATEGORY LOGIC
   static String getSupplier(String item) {
     item = item.toLowerCase();
 
@@ -39,5 +34,44 @@ class OrderService {
     } else {
       return "Other Supplier";
     }
+  }
+
+  // 💰 TOTAL COST
+  static double getTotalCost() {
+    double total = 0;
+
+    for (var o in orders) {
+      if (o.status == "purchased" && o.purchasePrice != null) {
+        total += o.purchasePrice!;
+      }
+    }
+
+    return total;
+  }
+
+  // 💰 TOTAL PER SHOP
+  static Map<String, double> getTotalPerShop() {
+    Map<String, double> totals = {};
+
+    for (var o in orders) {
+      if (o.status == "purchased" && o.purchasePrice != null) {
+        totals[o.shopName] =
+            (totals[o.shopName] ?? 0) + o.purchasePrice!;
+      }
+    }
+
+    return totals;
+  }
+
+  // 📦 GROUP BY SHOP
+  static Map<String, List<OrderModel>> getOrdersByShop() {
+    Map<String, List<OrderModel>> grouped = {};
+
+    for (var order in orders) {
+      grouped.putIfAbsent(order.shopName, () => []);
+      grouped[order.shopName]!.add(order);
+    }
+
+    return grouped;
   }
 }

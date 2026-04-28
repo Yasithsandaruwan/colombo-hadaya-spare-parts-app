@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/order_service.dart';
 import 'supplier_screen.dart';
 import 'analytics_screen.dart';
+import 'delivery_screen.dart';
 
 class DealerDashboard extends StatelessWidget {
   const DealerDashboard({super.key});
@@ -32,43 +33,50 @@ class DealerDashboard extends StatelessWidget {
             ),
           ),
 
-          // Supplier List Button
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SupplierScreen(),
-                    ),
-                  );
-                },
-                child: const Text("View Supplier List"),
-              ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SupplierScreen(),
+                  ),
+                );
+              },
+              child: const Text("Supplier List"),
             ),
           ),
 
-          // Finish Day Button
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AnalyticsScreen(),
-                    ),
-                  );
-                },
-                child: const Text("Finish Day"),
-              ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DeliveryScreen(),
+                  ),
+                );
+              },
+              child: const Text("Delivery View"),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AnalyticsScreen(),
+                  ),
+                );
+              },
+              child: const Text("Finish Day"),
             ),
           ),
         ],

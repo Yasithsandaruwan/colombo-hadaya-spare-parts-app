@@ -8,15 +8,15 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final orders = OrderService.orders;
 
-    // ❌ Failed = not_available OR not touched (null)
-    final failedItems = orders.where((o) =>
-      o.status != "purchased").toList();
+    final failedItems =
+        orders.where((o) => o.status != "purchased").toList();
 
-    // 📊 Count items
     Map<String, int> count = {};
     for (var o in orders) {
       count[o.itemName] = (count[o.itemName] ?? 0) + o.quantity;
     }
+
+    final shopTotals = OrderService.getTotalPerShop();
 
     return Scaffold(
       appBar: AppBar(title: const Text("End of Day Report")),
@@ -25,6 +25,7 @@ class AnalyticsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             const Text("❌ Failed Items",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
@@ -34,10 +35,8 @@ class AnalyticsScreen extends StatelessWidget {
                   : ListView(
                       children: failedItems.map((o) {
                         return ListTile(
-                          title: Text(
-                            o.itemName,
-                            style: const TextStyle(color: Colors.red),
-                          ),
+                          title: Text(o.itemName,
+                              style: const TextStyle(color: Colors.red)),
                           subtitle: Text("Shop: ${o.shopName}"),
                         );
                       }).toList(),
@@ -55,6 +54,22 @@ class AnalyticsScreen extends StatelessWidget {
                   return ListTile(
                     title: Text(e.key),
                     trailing: Text(e.value.toString()),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const Divider(),
+
+            const Text("💰 Shop Billing",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+            Expanded(
+              child: ListView(
+                children: shopTotals.entries.map((e) {
+                  return ListTile(
+                    title: Text(e.key),
+                    trailing: Text("Rs. ${e.value.toStringAsFixed(2)}"),
                   );
                 }).toList(),
               ),

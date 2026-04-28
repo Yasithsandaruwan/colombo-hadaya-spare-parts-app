@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../models/order.dart';
 
 class SupplierScreen extends StatefulWidget {
   const SupplierScreen({super.key});
@@ -9,6 +10,45 @@ class SupplierScreen extends StatefulWidget {
 }
 
 class _SupplierScreenState extends State<SupplierScreen> {
+
+  void markAsPurchased(OrderModel order) async {
+    TextEditingController priceController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Enter Purchase Price"),
+          content: TextField(
+            controller: priceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(hintText: "Price"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                double price =
+                    double.tryParse(priceController.text) ?? 0;
+
+                setState(() {
+                  order.status = "purchased";
+                  order.purchasePrice = price;
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final grouped = OrderService.getGroupedBySupplier();
@@ -38,17 +78,11 @@ class _SupplierScreenState extends State<SupplierScreen> {
                     Text("x${order.quantity}"),
                     const SizedBox(width: 10),
 
-                    // ✅ Purchased
                     IconButton(
                       icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () {
-                        setState(() {
-                          order.status = "purchased";
-                        });
-                      },
+                      onPressed: () => markAsPurchased(order),
                     ),
 
-                    // ❌ Not Available
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.red),
                       onPressed: () {
