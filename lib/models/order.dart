@@ -2,12 +2,12 @@ class OrderModel {
   String itemName;
   int quantity;
   String shopName;
-  String status;
+  String? status; // can be null
 
   OrderModel({
     required this.itemName,
     required this.quantity,
     required this.shopName,
-    this.status = "pending",
+    this.status, // default = null
   });
 }

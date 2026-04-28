@@ -8,9 +8,11 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final orders = OrderService.orders;
 
-    final failedItems =
-        orders.where((o) => o.status == "not_available").toList();
+    // ❌ Failed = not_available OR not touched (null)
+    final failedItems = orders.where((o) =>
+      o.status != "purchased").toList();
 
+    // 📊 Count items
     Map<String, int> count = {};
     for (var o in orders) {
       count[o.itemName] = (count[o.itemName] ?? 0) + o.quantity;
@@ -27,15 +29,19 @@ class AnalyticsScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
             Expanded(
-              child: ListView(
-                children: failedItems.map((o) {
-                  return ListTile(
-                    title: Text(o.itemName,
-                        style: const TextStyle(color: Colors.red)),
-                    subtitle: Text("Shop: ${o.shopName}"),
-                  );
-                }).toList(),
-              ),
+              child: failedItems.isEmpty
+                  ? const Center(child: Text("No failed items 🎉"))
+                  : ListView(
+                      children: failedItems.map((o) {
+                        return ListTile(
+                          title: Text(
+                            o.itemName,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          subtitle: Text("Shop: ${o.shopName}"),
+                        );
+                      }).toList(),
+                    ),
             ),
 
             const Divider(),

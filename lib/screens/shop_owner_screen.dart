@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/order_service.dart';
 import '../models/order.dart';
+import '../services/order_service.dart';
 import '../services/suggestion_service.dart';
-
 
 class ShopOwnerScreen extends StatefulWidget {
   final String shopName;
@@ -19,12 +18,24 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
 
   String? suggestion;
 
+  // 🔍 AI Suggestion Logic
   void checkSuggestion(String value) {
+    if (value.trim().isEmpty) {
+      setState(() => suggestion = null);
+      return;
+    }
+
+    final result = SuggestionService.getSuggestion(value);
+
     setState(() {
-      suggestion = SuggestionService.getSuggestion(value);
+      suggestion = (result != null &&
+              result.toLowerCase() != value.toLowerCase())
+          ? result
+          : null;
     });
   }
 
+  // ➕ Add Order
   void addOrder() {
     if (itemController.text.isEmpty || qtyController.text.isEmpty) return;
 
@@ -38,7 +49,10 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
 
     itemController.clear();
     qtyController.clear();
-    setState(() => suggestion = null);
+
+    setState(() {
+      suggestion = null;
+    });
   }
 
   @override
@@ -58,9 +72,8 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
               onChanged: checkSuggestion,
             ),
 
-            // 🔥 AI SUGGESTION
-            if (suggestion != null &&
-                suggestion!.toLowerCase() != itemController.text.toLowerCase())
+            // 💡 Suggestion UI
+            if (suggestion != null)
               GestureDetector(
                 onTap: () {
                   itemController.text = suggestion!;
@@ -81,6 +94,12 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
               controller: qtyController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Quantity"),
+              onChanged: (_) {
+                // 🔥 Hide suggestion when typing quantity
+                if (suggestion != null) {
+                  setState(() => suggestion = null);
+                }
+              },
             ),
 
             const SizedBox(height: 20),
