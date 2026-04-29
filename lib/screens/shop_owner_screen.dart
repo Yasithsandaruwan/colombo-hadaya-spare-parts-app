@@ -13,13 +13,33 @@ class ShopOwnerScreen extends StatefulWidget {
 }
 
 class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
-  final itemController = TextEditingController();
-  final qtyController = TextEditingController();
+  final TextEditingController itemController = TextEditingController();
+  final TextEditingController qtyController = TextEditingController();
 
   String? suggestion;
-
-  // 🆕 Temporary list (cart)
   List<OrderModel> tempOrders = [];
+
+  Future<bool> confirmExit() async {
+    if (tempOrders.isEmpty) return true;
+
+    return await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Discard Order?"),
+            content: const Text(
+                "You have unsent items. Do you want to discard them?"),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("No")),
+              ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("Yes")),
+            ],
+          ),
+        ) ??
+        false;
+  }
 
   void checkSuggestion(String value) {
     if (value.trim().isEmpty) {
@@ -30,165 +50,162 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
     final result = SuggestionService.getSuggestion(value);
 
     setState(() {
-      suggestion =
-          (result != null && result.toLowerCase() != value.toLowerCase())
-              ? result
-              : null;
+      suggestion = (result != null &&
+              result.toLowerCase() != value.toLowerCase())
+          ? result
+          : null;
     });
   }
 
-  // 🟡 Add to TEMP list (not service)
-  void addItem() {
+  void addTempOrder() {
     if (itemController.text.isEmpty || qtyController.text.isEmpty) return;
 
     setState(() {
-      tempOrders.add(
-        OrderModel(
-          itemName: itemController.text,
-          quantity: int.parse(qtyController.text),
-          shopName: widget.shopName,
-        ),
-      );
-    });
+      tempOrders.add(OrderModel(
+        itemName: itemController.text,
+        quantity: int.parse(qtyController.text),
+        shopName: widget.shopName,
+      ));
 
-    itemController.clear();
-    qtyController.clear();
-    suggestion = null;
-  }
-
-  // 🔴 Delete item
-  void removeItem(int index) {
-    setState(() {
-      tempOrders.removeAt(index);
+      itemController.clear();
+      qtyController.clear();
+      suggestion = null;
     });
   }
 
-  // ✅ Submit all items
+  void removeItem(int index) async {
+    final confirm = await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Remove Item"),
+        content: const Text("Are you sure you want to delete this item?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("No")),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Yes")),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => tempOrders.removeAt(index));
+    }
+  }
+
   void submitOrder() {
-    if (tempOrders.isEmpty) return;
-
     for (var order in tempOrders) {
       OrderService.addOrder(order);
     }
 
-    setState(() {
-      tempOrders.clear();
-    });
+    setState(() => tempOrders.clear());
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Your order has been placed"),
-        backgroundColor: Colors.green,
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Success"),
+        content: const Text("Your order has been placed"),
+        actions: [
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"))
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.shopName),
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.grey[100],
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // 🔹 Input Card
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: itemController,
-                      decoration: const InputDecoration(
-                        labelText: "Item Name",
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: checkSuggestion,
-                    ),
-
-                    if (suggestion != null)
-                      ListTile(
-                        title: Text("Did you mean: $suggestion"),
-                        leading: const Icon(Icons.lightbulb_outline),
-                        onTap: () {
-                          itemController.text = suggestion!;
-                          setState(() => suggestion = null);
-                        },
+    return WillPopScope(
+      onWillPop: confirmExit,
+      child: Scaffold(
+        appBar: AppBar(title: Text(widget.shopName)),
+        backgroundColor: Colors.grey[100],
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: itemController,
+                        decoration:
+                            const InputDecoration(labelText: "Item Name"),
+                        onChanged: checkSuggestion,
                       ),
 
-                    const SizedBox(height: 10),
+                      if (suggestion != null)
+                        ListTile(
+                          title: Text("Did you mean: $suggestion"),
+                          onTap: () {
+                            itemController.text = suggestion!;
+                            setState(() => suggestion = null);
+                          },
+                        ),
 
-                    TextField(
-                      controller: qtyController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Quantity",
-                        border: OutlineInputBorder(),
+                      TextField(
+                        controller: qtyController,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            const InputDecoration(labelText: "Quantity"),
                       ),
-                    ),
 
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
-                    ElevatedButton.icon(
-                      onPressed: addItem,
-                      icon: const Icon(Icons.add),
-                      label: const Text("Add Item"),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 45),
+                      ElevatedButton(
+                        onPressed: addTempOrder,
+                        child: const Text("Add Item"),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 15),
+              const SizedBox(height: 10),
 
-            // 🔹 Item List
-            Expanded(
-              child: tempOrders.isEmpty
-                  ? const Center(child: Text("No items added yet"))
-                  : ListView.builder(
-                      itemCount: tempOrders.length,
-                      itemBuilder: (context, index) {
-                        final item = tempOrders[index];
+              Expanded(
+                child: tempOrders.isEmpty
+                    ? const Center(child: Text("No items added"))
+                    : ListView.builder(
+                        itemCount: tempOrders.length,
+                        itemBuilder: (_, i) {
+                          final o = tempOrders[i];
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          child: ListTile(
-                            title: Text(item.itemName),
-                            subtitle: Text("Qty: ${item.quantity}"),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => removeItem(index),
+                          return Card(
+                            child: ListTile(
+                              title: Text(o.itemName),
+                              subtitle: Text("Qty: ${o.quantity}"),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.red),
+                                onPressed: () => removeItem(i),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
+                          );
+                        },
+                      ),
+              ),
 
-            // 🔹 Submit Button
-            ElevatedButton(
-              onPressed: submitOrder,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                minimumSize: const Size(double.infinity, 50),
+              const SizedBox(height: 10),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed:
+                      tempOrders.isEmpty ? null : submitOrder,
+                  child: const Text("Submit Order"),
+                ),
               ),
-              child: const Text(
-                "Submit Order",
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

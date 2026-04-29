@@ -10,24 +10,53 @@ class SupplierScreen extends StatefulWidget {
 }
 
 class _SupplierScreenState extends State<SupplierScreen> {
+
   void markAsPurchased(OrderModel order) async {
-    TextEditingController controller = TextEditingController();
+    TextEditingController priceController = TextEditingController();
+    TextEditingController qtyController =
+        TextEditingController(text: order.quantity.toString());
 
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Enter Price"),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
+        title: const Text("Enter Purchase Details"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Unit Price",
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: qtyController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Bought Quantity",
+              ),
+            ),
+          ],
         ),
         actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
           ElevatedButton(
             onPressed: () {
+              double price =
+                  double.tryParse(priceController.text) ?? 0;
+              int qty =
+                  int.tryParse(qtyController.text) ?? order.quantity;
+
               setState(() {
+                order.purchasePrice = price;
+                order.quantity = qty;
                 order.status = "purchased";
-                order.purchasePrice = double.tryParse(controller.text) ?? 0;
               });
+
               Navigator.pop(context);
             },
             child: const Text("Save"),
@@ -37,40 +66,89 @@ class _SupplierScreenState extends State<SupplierScreen> {
     );
   }
 
+  void markNotAvailable(OrderModel order) async {
+    if (order.status == "purchased") {
+      final confirm = await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Warning"),
+          content: const Text(
+              "This item is already purchased. Mark as not available?"),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("No")),
+            ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Yes")),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+    }
+
+    setState(() {
+      order.status = "not_available";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final grouped = OrderService.getGroupedBySupplier();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Suppliers")),
+      appBar: AppBar(title: const Text("Supplier Management")),
+      backgroundColor: Colors.grey[100],
+
       body: ListView(
         children: grouped.entries.map((entry) {
-          return ExpansionTile(
-            title: Text(entry.key),
-            children: entry.value.map((o) {
-              return Card(
-                margin: const EdgeInsets.all(6),
-                child: ListTile(
-                  title: Text(o.itemName),
-                  subtitle: Text(o.shopName),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        onPressed: () => markAsPurchased(o),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
-                        onPressed: () {
-                          setState(() => o.status = "not_available");
-                        },
-                      ),
+          return Card(
+            margin: const EdgeInsets.all(10),
+            child: ExpansionTile(
+              title: Text(entry.key),
+              children: [
+
+                // Table Header
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  color: Colors.grey[200],
+                  child: Row(
+                    children: const [
+                      Expanded(flex: 3, child: Text("Item")),
+                      Expanded(child: Text("Buy")),
+                      Expanded(child: Text("NA")),
                     ],
                   ),
                 ),
-              );
-            }).toList(),
+
+                // Items
+                ...entry.value.map((o) {
+                  return Container(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Expanded(flex: 3, child: Text(o.itemName)),
+
+                        Expanded(
+                          child: Checkbox(
+                            value: o.status == "purchased",
+                            onChanged: (_) => markAsPurchased(o),
+                          ),
+                        ),
+
+                        Expanded(
+                          child: Checkbox(
+                            value: o.status == "not_available",
+                            onChanged: (_) => markNotAvailable(o),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
           );
         }).toList(),
       ),
