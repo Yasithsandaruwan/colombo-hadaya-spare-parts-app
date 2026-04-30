@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
+import 'analytics_screen.dart';
 
 class DeliveryScreen extends StatefulWidget {
   const DeliveryScreen({super.key});
@@ -21,6 +22,39 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF263238),
         elevation: 0.5,
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final confirm = await showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Done Delivering?"),
+                  content: const Text("Are you sure deliveries are complete?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Yes"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AnalyticsScreen(),
+                  ),
+                );
+              }
+            },
+            child: const Text("Done Delivering?"),
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF3F5F8),
 
@@ -49,7 +83,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         title: Text(o.itemName),
 
                         subtitle: Text(
-                          "Ordered: ${o.quantity} | Remaining: ${o.remainingQuantity}",
+                          o.remainingQuantity > 0
+                              ? "Ordered: ${o.quantity} | Buy ${o.remainingQuantity} more"
+                              : "Ordered: ${o.quantity} | fulfilled",
                         ),
 
                         trailing: Text(

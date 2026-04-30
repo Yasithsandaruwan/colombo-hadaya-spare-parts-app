@@ -92,16 +92,16 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
     });
   }
 
-  void submitOrder() {
+  Future<void> submitOrder() async {
     if (tempOrders.isEmpty) return;
 
-    OrderService.saveShopContact(
-    shopNameController.text,
-    phoneController.text,
-  );
+    await OrderService.saveShopContact(
+      shopNameController.text,
+      phoneController.text,
+    );
 
     for (var order in tempOrders) {
-      OrderService.addOrder(order);
+      await OrderService.addOrder(order);
     }
 
     setState(() {

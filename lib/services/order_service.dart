@@ -1,4 +1,5 @@
 import '../models/order.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SupplierModel {
   final String name;
@@ -12,9 +13,66 @@ class SupplierModel {
 
 class OrderService {
   static List<OrderModel> orders = [];
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static bool _loaded = false;
 
-  static void addOrder(OrderModel order) {
+  static Future<void> init() async {
+    if (_loaded) return;
+    await loadOrders();
+    await loadShopContacts();
+    _loaded = true;
+  }
+
+  static Future<void> addOrder(OrderModel order) async {
+    try {
+      final doc = await _db.collection("orders").add(order.toJson());
+      order.id = doc.id;
+    } catch (_) {
+      // Keep local data even if cloud write fails.
+    }
     orders.add(order);
+  }
+
+  static Future<void> saveOrder(OrderModel order) async {
+    if (order.id == null) return;
+    try {
+      await _db.collection("orders").doc(order.id).set(order.toJson());
+    } catch (_) {
+      // Keep local data even if cloud write fails.
+    }
+  }
+
+  static Future<void> saveDraft(String shopName, List<OrderModel> items) async {
+    try {
+      await _db.collection("draftOrders").doc(shopName).set({
+        "items": items.map((o) => o.toJson()).toList(),
+        "updatedAt": DateTime.now().toIso8601String(),
+      });
+    } catch (_) {
+      // Ignore draft save failures.
+    }
+  }
+
+  static Future<List<OrderModel>> loadDraft(String shopName) async {
+    try {
+      final doc = await _db.collection("draftOrders").doc(shopName).get();
+      if (!doc.exists) return [];
+      final data = doc.data();
+      final items = (data?["items"] as List<dynamic>? ?? []);
+      return items
+          .map((item) => OrderModel.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> clearDraft(String shopName) async {
+    try {
+      await _db.collection("draftOrders").doc(shopName).delete();
+    } catch (_) {
+      // Ignore draft delete failures.
+    }
   }
 
   // ---------------- SUPPLIERS ----------------
@@ -133,8 +191,6 @@ class OrderService {
     Map<String, List<OrderModel>> grouped = {};
 
     for (var order in orders) {
-      // 🔥 IMPORTANT: only show items that still need buying
-      if (order.remainingQuantity <= 0) continue;
 
       List<String> matchedSuppliers =
           getAllMatchingSuppliers(order.itemName);
@@ -190,8 +246,39 @@ class OrderService {
   // STORE SHOP CONTACTS
   static Map<String, String> shopContacts = {};
 
-  static void saveShopContact(String shopName, String phone) {
+  static Future<void> saveShopContact(String shopName, String phone) async {
     shopContacts[shopName] = phone;
+    try {
+      await _db.collection("shopContacts").doc(shopName).set({
+        "phone": phone,
+        "updatedAt": DateTime.now().toIso8601String(),
+      });
+    } catch (_) {
+      // Keep local data even if cloud write fails.
+    }
+  }
+
+  static Future<void> loadOrders() async {
+    try {
+      final snapshot = await _db.collection("orders").get();
+      orders = snapshot.docs
+          .map((doc) => OrderModel.fromJson(doc.data(), id: doc.id))
+          .toList();
+    } catch (_) {
+      // Ignore load errors and keep existing in-memory list.
+    }
+  }
+
+  static Future<void> loadShopContacts() async {
+    try {
+      final snapshot = await _db.collection("shopContacts").get();
+      shopContacts = {
+        for (final doc in snapshot.docs)
+          doc.id: (doc.data()["phone"] ?? "") as String,
+      };
+    } catch (_) {
+      // Ignore load errors and keep existing in-memory map.
+    }
   }
 
   static Map<String, int> getMostRequestedItems() {

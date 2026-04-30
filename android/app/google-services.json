@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "507168101604",
+    "project_id": "colombo-hadaya",
+    "storage_bucket": "colombo-hadaya.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507168101604:android:e5d9c6846fd0f27f3748f1",
+        "android_client_info": {
+          "package_name": "com.Deliver.colombo_hadaya_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-RyDTHK_x_K6gjyV1swOWMMo7SwUPZfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -26,9 +26,33 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
 
     messages.add({
       "text":
-          "Welcome to Colombo Hadaya.\n\nThis is an automated ordering system.\n\nDo not use chat to contact us.\nCall: 0712345678\n\nInstructions:\n\n• Add item:\nGalaxy M02 display x 2\n\n• Delete item:\nDel Galaxy M02 display\n\n• Submit order:\nSubmit",
+          "Welcome to Colombo Hadaya.\nYour one and only reliable mobile spare parts and accessories provider.\n\nThis is an automated ordering system.\nFor urgent support, call: 0712345678\n\nHow to order:\n\n1) Add item\nGalaxy M02 Display x 2\n\n2) Delete item\nDel Galaxy M02 Display\n\n3) Submit order\nSubmit.\n\nif you go back without submitting, your order will be saved as a draft.",
       "isUser": false,
     });
+
+    _loadDraft();
+  }
+
+  Future<void> _loadDraft() async {
+    final draftItems = await OrderService.loadDraft(widget.shopName);
+    if (draftItems.isEmpty) return;
+
+    setState(() {
+      tempOrders = draftItems;
+      messages.add({
+        "text": "Draft loaded.\n\n${buildOrderSummary()}",
+        "isUser": false,
+      });
+    });
+    scrollToBottom();
+  }
+
+  @override
+  void dispose() {
+    if (tempOrders.isNotEmpty) {
+      OrderService.saveDraft(widget.shopName, tempOrders);
+    }
+    super.dispose();
   }
 
   // AUTO SCROLL
@@ -47,6 +71,9 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
     String input = messageController.text.trim();
     if (input.isEmpty) return;
 
+    final lower = input.toLowerCase();
+    final isCommand = lower == "submit" || lower.startsWith("del ") || lower.startsWith("delete ");
+
     setState(() {
       messages.add({"text": input, "isUser": true});
     });
@@ -54,11 +81,15 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
     messageController.clear();
     scrollToBottom();
 
+    if (isCommand) {
+      await processMessage(input);
+      return;
+    }
+
     // 🔥 AI Correction (SAFE)
     String corrected = input;
     try {
-      final suggestion =
-          await SuggestionService.getSuggestion(input);
+      final suggestion = await SuggestionService.getSuggestion(input);
       if (suggestion != null && suggestion.isNotEmpty) {
         corrected = suggestion;
       }
@@ -66,11 +97,11 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       corrected = input;
     }
 
-    processMessage(corrected);
+    await processMessage(corrected);
   }
 
   // PROCESS MESSAGE
-  void processMessage(String input) {
+  Future<void> processMessage(String input) async {
     String lower = input.toLowerCase();
 
     // -------- SUBMIT --------
@@ -82,8 +113,10 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       }
 
       for (var o in tempOrders) {
-        OrderService.addOrder(o);
+        await OrderService.addOrder(o);
       }
+
+      await OrderService.clearDraft(widget.shopName);
 
       addBotMessage(
           "Order placed successfully.\n\n${buildOrderSummary()}");
@@ -96,13 +129,24 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
     }
 
     // -------- DELETE --------
-    if (lower.startsWith("del ")) {
-      String itemName = input.substring(4).trim();
+    if (lower.startsWith("del ") || lower.startsWith("delete ")) {
+      final itemName = lower.startsWith("delete ")
+          ? input.substring(7).trim()
+          : input.substring(4).trim();
+        final target = _normalizeItem(itemName);
+        final beforeCount = tempOrders.length;
 
-      tempOrders.removeWhere(
-          (o) => o.itemName.toLowerCase() == itemName.toLowerCase());
+        tempOrders.removeWhere((o) {
+          final current = _normalizeItem(o.itemName);
+          return current == target || current.contains(target);
+        });
 
-      addBotMessage("Removed: $itemName\n\n${buildOrderSummary()}");
+        if (tempOrders.length == beforeCount) {
+          addBotMessage("Item not found: $itemName\n\n${buildOrderSummary()}");
+          return;
+        }
+
+        addBotMessage("Removed: $itemName\n\n${buildOrderSummary()}");
       return;
     }
 
@@ -145,6 +189,11 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
     }
 
     return summary;
+  }
+
+  String _normalizeItem(String value) {
+    final cleaned = value.toLowerCase().replaceAll(RegExp(r"\s+"), " ").trim();
+    return cleaned;
   }
 
   // CHAT BUBBLE

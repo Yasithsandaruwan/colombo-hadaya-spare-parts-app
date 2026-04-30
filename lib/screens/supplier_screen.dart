@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
+import 'delivery_screen.dart';
 
 class SupplierScreen extends StatefulWidget {
   const SupplierScreen({super.key});
@@ -59,6 +60,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                 );
               });
 
+              OrderService.saveOrder(order);
               Navigator.pop(context);
             },
             child: const Text("Save"),
@@ -102,6 +104,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
     setState(() {
       order.removePurchaseFromSupplier(supplierName);
     });
+    OrderService.saveOrder(order);
   }
 
   @override
@@ -109,7 +112,42 @@ class _SupplierScreenState extends State<SupplierScreen> {
     final grouped = OrderService.getGroupedBySupplier();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Supplier Management")),
+      appBar: AppBar(
+        title: const Text("Supplier Management"),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final confirm = await showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Done Purchasing?"),
+                  content: const Text("Are you sure you finished purchasing?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Yes"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DeliveryScreen(),
+                  ),
+                );
+              }
+            },
+            child: const Text("Done Purchasing?"),
+          ),
+        ],
+      ),
       backgroundColor: const Color(0xFFF5F7FB),
 
       body: grouped.isEmpty
@@ -183,19 +221,18 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                     ),
 
                                     Text(
-                                      "Remaining: ${o.remainingQuantity}",
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey),
-                                    ),
-
-                                    if (o.isCompleted)
-                                      const Text(
-                                        "Completed",
-                                        style: TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 12),
+                                      o.isCompleted
+                                          ? "Completed x ${o.quantity}"
+                                          : o.purchasedQuantity > 0
+                                              ? "Buy ${o.remainingQuantity} more"
+                                              : "Buy ${o.remainingQuantity}",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: o.isCompleted
+                                            ? Colors.green
+                                            : Colors.grey,
                                       ),
+                                    ),
                                   ],
                                 ),
                               ),

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/login_screen.dart';
+import 'services/order_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await OrderService.init();
   runApp(const MyApp());
 }
 

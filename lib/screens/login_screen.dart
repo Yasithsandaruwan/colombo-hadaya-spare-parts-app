@@ -182,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
 
                       if (role == "Dealer") {
                         Navigator.push(
@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
 
                         // SAVE CONTACT
-                        OrderService.saveShopContact(
+                        await OrderService.saveShopContact(
                           nameController.text,
                           phoneController.text,
                         );

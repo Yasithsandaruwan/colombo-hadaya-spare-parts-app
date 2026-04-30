@@ -19,7 +19,7 @@ class AnalyticsScreen extends StatelessWidget {
     final orders = OrderService.orders;
 
     final failedItems =
-        orders.where((o) => o.status != "purchased").toList();
+      orders.where((o) => o.remainingQuantity > 0).toList();
 
     final shopTotals = OrderService.getTotalPerShop();
 
@@ -37,7 +37,7 @@ class AnalyticsScreen extends StatelessWidget {
             return Card(
               child: ListTile(
                 title: Text(o.itemName),
-                subtitle: Text(o.shopName),
+                subtitle: Text("${o.shopName} • Remaining: ${o.remainingQuantity}"),
               ),
             );
           }),

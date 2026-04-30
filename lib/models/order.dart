@@ -10,9 +10,26 @@ class PurchaseRecord {
   });
 
   double get total => quantity * unitPrice;
+
+  Map<String, dynamic> toJson() {
+    return {
+      "supplierName": supplierName,
+      "quantity": quantity,
+      "unitPrice": unitPrice,
+    };
+  }
+
+  static PurchaseRecord fromJson(Map<String, dynamic> json) {
+    return PurchaseRecord(
+      supplierName: json["supplierName"] ?? "",
+      quantity: (json["quantity"] ?? 0) as int,
+      unitPrice: (json["unitPrice"] ?? 0).toDouble(),
+    );
+  }
 }
 
 class OrderModel {
+  String? id;
   String itemName;
   int quantity; // original ordered quantity
   String shopName;
@@ -23,6 +40,7 @@ class OrderModel {
   List<PurchaseRecord> purchases; // 🔥 NEW
 
   OrderModel({
+    this.id,
     required this.itemName,
     required this.quantity,
     required this.shopName,
@@ -31,6 +49,32 @@ class OrderModel {
     List<PurchaseRecord>? purchases,
   })  : createdAt = createdAt ?? DateTime.now(),
         purchases = purchases ?? [];
+
+  Map<String, dynamic> toJson() {
+    return {
+      "itemName": itemName,
+      "quantity": quantity,
+      "shopName": shopName,
+      "createdAt": createdAt.toIso8601String(),
+      "status": status,
+      "purchases": purchases.map((p) => p.toJson()).toList(),
+    };
+  }
+
+  static OrderModel fromJson(Map<String, dynamic> json, {String? id}) {
+    final purchasesJson = (json["purchases"] as List<dynamic>?) ?? [];
+    return OrderModel(
+      id: id,
+      itemName: json["itemName"] ?? "",
+      quantity: (json["quantity"] ?? 0) as int,
+      shopName: json["shopName"] ?? "",
+      createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
+      status: json["status"],
+      purchases: purchasesJson
+          .map((p) => PurchaseRecord.fromJson(Map<String, dynamic>.from(p)))
+          .toList(),
+    );
+  }
 
   // 🔥 TOTAL PURCHASED
   int get purchasedQuantity =>
