@@ -12,13 +12,13 @@ class DealerDashboard extends StatelessWidget {
 
   Widget buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
-          color: Colors.black87,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF263238),
           letterSpacing: 0.5,
         ),
       ),
@@ -28,7 +28,7 @@ class DealerDashboard extends StatelessWidget {
   Widget buildCard({
     required String title,
     required IconData icon,
-    required List<Color> gradientColors,
+    required Color accentColor,
     required VoidCallback onTap,
   }) {
     return Expanded(
@@ -36,34 +36,39 @@ class DealerDashboard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: accentColor.withOpacity(0.18)),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.last.withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               )
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 38, color: Colors.white),
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24, color: accentColor),
+              ),
               const SizedBox(height: 12),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Color(0xFF263238),
                 ),
               )
             ],
@@ -75,23 +80,31 @@ class DealerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final totalOrders = OrderService.orders.length;
+    final activeShops = OrderService.getOrdersByShop().length;
+    final netRevenue = activeShops * 1000;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: const Color(0xFFF3F5F8),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: const [
-            Icon(Icons.sentiment_satisfied_alt, color: Colors.orange, size: 28),
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: Color(0xFF25D366),
+              child: Icon(Icons.tag_faces, color: Colors.white, size: 16),
+            ),
             SizedBox(width: 8),
             Text(
               "Colombo Hadaya",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
             ),
           ],
         ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
+        foregroundColor: const Color(0xFF263238),
+        elevation: 0.5,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -101,18 +114,45 @@ class DealerDashboard extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
             const Text(
-              "Welcome Back,",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              "Welcome back",
+              style: TextStyle(fontSize: 14, color: Color(0xFF607D8B)),
             ),
             const Text(
               "Dealer Dashboard",
               style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: Colors.black87,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF263238),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 14),
+
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _StatItem(label: "Orders", value: "$totalOrders"),
+                  _StatDivider(),
+                  _StatItem(label: "Today's Net Revenue", value: "$netRevenue"),
+                  _StatDivider(),
+                  _StatItem(label: "Shops", value: "$activeShops"),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 22),
 
             // ---------------- PURCHASE ----------------
             buildSectionTitle("Purchase"),
@@ -121,7 +161,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Today's Orders",
                   icon: Icons.list_alt,
-                  gradientColors: [Colors.blue.shade400, Colors.blue.shade700],
+                  accentColor: const Color(0xFF1E88E5),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -134,7 +174,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Go Purchase",
                   icon: Icons.shopping_cart,
-                  gradientColors: [Colors.orange.shade400, Colors.deepOrange.shade600],
+                  accentColor: const Color(0xFFF57C00),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -155,7 +195,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Go Delivery",
                   icon: Icons.local_shipping,
-                  gradientColors: [Colors.green.shade400, Colors.green.shade700],
+                  accentColor: const Color(0xFF2E7D32),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -168,7 +208,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Contact Shops",
                   icon: Icons.phone,
-                  gradientColors: [Colors.teal.shade400, Colors.teal.shade700],
+                  accentColor: const Color(0xFF00897B),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -189,7 +229,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Daily Report",
                   icon: Icons.bar_chart,
-                  gradientColors: [Colors.purple.shade400, Colors.purple.shade700],
+                  accentColor: const Color(0xFF3949AB),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -202,7 +242,7 @@ class DealerDashboard extends StatelessWidget {
                 buildCard(
                   title: "Most Wanted",
                   icon: Icons.trending_up,
-                  gradientColors: [Colors.indigo.shade400, Colors.indigo.shade700],
+                  accentColor: const Color(0xFF1565C0),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -218,6 +258,49 @@ class DealerDashboard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _StatItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF607D8B),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF263238),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 36,
+      color: const Color(0xFFE0E0E0),
     );
   }
 }

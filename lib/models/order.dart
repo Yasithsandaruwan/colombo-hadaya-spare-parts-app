@@ -16,6 +16,7 @@ class OrderModel {
   String itemName;
   int quantity; // original ordered quantity
   String shopName;
+  DateTime createdAt;
 
   String? status;
 
@@ -25,9 +26,11 @@ class OrderModel {
     required this.itemName,
     required this.quantity,
     required this.shopName,
+    DateTime? createdAt,
     this.status,
     List<PurchaseRecord>? purchases,
-  }) : purchases = purchases ?? [];
+  })  : createdAt = createdAt ?? DateTime.now(),
+        purchases = purchases ?? [];
 
   // 🔥 TOTAL PURCHASED
   int get purchasedQuantity =>

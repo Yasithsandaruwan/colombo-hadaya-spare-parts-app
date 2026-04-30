@@ -14,7 +14,6 @@ class ChatOrderScreen extends StatefulWidget {
 }
 
 class _ChatOrderScreenState extends State<ChatOrderScreen> {
-
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
 
@@ -158,17 +157,17 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       children: [
         Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(12),
-          constraints: const BoxConstraints(maxWidth: 260),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          constraints: const BoxConstraints(maxWidth: 280),
           decoration: BoxDecoration(
-            color: isUser ? Colors.green[300] : Colors.white,
+            color: isUser ? const Color(0xFFDCF8C6) : Colors.white,
             borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(12),
-              topRight: const Radius.circular(12),
+              topLeft: const Radius.circular(14),
+              topRight: const Radius.circular(14),
               bottomLeft:
-                  isUser ? const Radius.circular(12) : Radius.zero,
+                  isUser ? const Radius.circular(14) : const Radius.circular(2),
               bottomRight:
-                  isUser ? Radius.zero : const Radius.circular(12),
+                  isUser ? const Radius.circular(2) : const Radius.circular(14),
             ),
             boxShadow: [
               BoxShadow(
@@ -177,9 +176,24 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
               )
             ],
           ),
-          child: Text(msg["text"]),
+          child: Text(
+            msg["text"],
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
         ),
       ],
+    );
+  }
+
+  Widget buildAvatar() {
+    return const CircleAvatar(
+      radius: 18,
+      backgroundColor: Color(0xFFFFD166),
+      child: Icon(
+        Icons.tag_faces,
+        color: Colors.black87,
+        size: 22,
+      ),
     );
   }
 
@@ -189,8 +203,38 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       backgroundColor: const Color(0xFFECE5DD),
 
       appBar: AppBar(
-        title: Text(widget.shopName),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF075E54),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            buildAvatar(),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Colombo Hadaya",
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    "online",
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: const [
+          Icon(Icons.videocam_outlined),
+          SizedBox(width: 16),
+          Icon(Icons.call_outlined),
+          SizedBox(width: 16),
+          Icon(Icons.more_vert),
+          SizedBox(width: 8),
+        ],
       ),
 
       body: Column(
@@ -200,7 +244,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
           Expanded(
             child: ListView.builder(
               controller: scrollController,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               itemCount: messages.length,
               itemBuilder: (_, i) => buildMessage(messages[i]),
             ),
@@ -208,24 +252,39 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
 
           // INPUT BAR
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 10),
+            color: const Color(0xFFECE5DD),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: messageController,
-                    onSubmitted: (_) => sendMessage(),
-                    decoration: const InputDecoration(
-                      hintText: "Type message...",
-                      border: InputBorder.none,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: TextField(
+                      controller: messageController,
+                      onSubmitted: (_) => sendMessage(),
+                      decoration: const InputDecoration(
+                        hintText: "Type a message",
+                        border: InputBorder.none,
+                        icon: Icon(Icons.emoji_emotions_outlined),
+                      ),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Colors.green),
-                  onPressed: () => sendMessage(),
-                )
+                const SizedBox(width: 6),
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF25D366),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: () => sendMessage(),
+                  ),
+                ),
               ],
             ),
           ),

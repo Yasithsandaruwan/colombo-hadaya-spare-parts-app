@@ -44,22 +44,97 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
 
                 const Center(
-                  child: Text(
-                    "Colombo Hadaya",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 34,
+                        backgroundColor: Color(0xFF25D366),
+                        child: Icon(
+                          Icons.tag_faces,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Colombo Hadaya",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Order parts faster via chat",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 10),
 
                 const Text(
-                  "* Use this temporary option to replicate WhatsApp API demonstration.\nReal WhatsApp API will be integrated later.",
+                  "* Demo only: WhatsApp API is paid, so this is a simple replication. Real WhatsApp Business API will be used later.",
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE7F6EC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBFE8CC)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 16, color: Color(0xFF075E54)),
+                          SizedBox(width: 6),
+                          Text(
+                            "Quick tips",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF075E54),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
+                          SizedBox(width: 6),
+                          Expanded(child: Text("First login as shop owner and make some orders")),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
+                          SizedBox(width: 6),
+                          Expanded(child: Text("Use 'item x qty' to add parts")),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
+                          SizedBox(width: 6),
+                          Expanded(child: Text("Type 'submit' to place the order")),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
 

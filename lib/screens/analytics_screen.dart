@@ -4,6 +4,16 @@ import '../services/order_service.dart';
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
 
+  Widget buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18, bottom: 8),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final orders = OrderService.orders;
@@ -21,10 +31,7 @@ class AnalyticsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         children: [
 
-          const Text("Failed Items",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-          const SizedBox(height: 8),
+          buildSectionTitle("Failed Items"),
 
           ...failedItems.map((o) {
             return Card(
@@ -35,19 +42,13 @@ class AnalyticsScreen extends StatelessWidget {
             );
           }),
 
-          const SizedBox(height: 20),
-
-          const Text("Shop Billing",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-          const SizedBox(height: 8),
+          buildSectionTitle("Shop Billing"),
 
           ...shopTotals.entries.map((e) {
             return Card(
               child: ListTile(
                 title: Text(e.key),
-                trailing:
-                    Text("Rs. ${e.value.toStringAsFixed(2)}"),
+                trailing: Text("Rs. ${e.value.toStringAsFixed(2)}"),
               ),
             );
           }),

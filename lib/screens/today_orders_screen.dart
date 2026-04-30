@@ -11,10 +11,11 @@ class TodayOrdersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Today's Orders"),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF263238),
+        elevation: 0.5,
       ),
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: const Color(0xFFF3F5F8),
       body: grouped.isEmpty
           ? const Center(
               child: Text(
@@ -51,14 +52,14 @@ class TodayOrdersScreen extends StatelessWidget {
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: const Color(0xFFE3F2FD),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               "x${o.quantity}",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
+                                color: const Color(0xFF1E88E5),
                                 fontSize: 14,
                               ),
                             ),

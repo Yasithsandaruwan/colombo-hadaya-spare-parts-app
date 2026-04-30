@@ -16,8 +16,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     final grouped = OrderService.getOrdersByShop();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Delivery Summary")),
-      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: const Text("Delivery Summary"),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF263238),
+        elevation: 0.5,
+      ),
+      backgroundColor: const Color(0xFFF3F5F8),
 
       body: grouped.isEmpty
           ? const Center(child: Text("No Orders Yet"))
@@ -29,6 +34,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   0,
                   (sum, o) => sum + o.totalPrice,
                 );
+                total += 1000;
 
                 return Card(
                   margin: const EdgeInsets.all(10),
@@ -52,7 +58,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                               fontWeight: FontWeight.bold),
                         ),
                       );
-                    }).toList(),
+                    }).toList()
+                      ..add(
+                        const ListTile(
+                          title: Text("Delivery Charge"),
+                          trailing: Text(
+                            "Rs. 1000.00",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
                   ),
                 );
               }).toList(),
