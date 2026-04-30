@@ -1,175 +1,222 @@
 import 'package:flutter/material.dart';
-import '../services/order_service.dart';
 import 'supplier_screen.dart';
-import 'analytics_screen.dart';
 import 'delivery_screen.dart';
+import 'analytics_screen.dart';
+import 'contact_screen.dart';
+import 'today_orders_screen.dart'; // <-- New import
+import 'most_wanted_screen.dart';  // <-- New import
+import '../services/order_service.dart';
 
 class DealerDashboard extends StatelessWidget {
   const DealerDashboard({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final orders = OrderService.orders;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("Colombo Hadaya"), centerTitle: true),
-      backgroundColor: Colors.grey[100],
-
-      body: Column(
-        children: [
-          // 🔷 HEADER
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Dealer Dashboard",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  "Manage today's orders efficiently",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // 📦 ORDERS TITLE
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Icon(Icons.inventory, color: Colors.black),
-                SizedBox(width: 6),
-                Text(
-                  "Today's Orders",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // 📦 ORDER LIST (CARD STYLE)
-          Expanded(
-            child: orders.isEmpty
-                ? const Center(child: Text("No orders yet"))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    itemCount: orders.length,
-                    itemBuilder: (_, i) {
-                      final o = orders[i];
-
-                      return Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.black,
-                            child: Icon(Icons.build, color: Colors.white),
-                          ),
-                          title: Text(
-                            o.itemName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(o.shopName),
-                          trailing: Text(
-                            "x${o.quantity}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // 🔘 ACTION BUTTONS (MODERN STYLE)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              children: [
-                // Supplier
-                _buildButton(
-                  context,
-                  text: "Supplier List",
-                  icon: Icons.store,
-                  color: Colors.blue,
-                  screen: const SupplierScreen(),
-                ),
-
-                // Delivery
-                _buildButton(
-                  context,
-                  text: "Delivery View",
-                  icon: Icons.local_shipping,
-                  color: Colors.orange,
-                  screen: const DeliveryScreen(),
-                ),
-
-                // Finish Day
-                _buildButton(
-                  context,
-                  text: "Finish Day",
-                  icon: Icons.check_circle,
-                  color: Colors.green,
-                  screen: const AnalyticsScreen(),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 10),
-        ],
+  Widget buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: Colors.black87,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
 
-  // 🔧 REUSABLE BUTTON
-  Widget _buildButton(
-    BuildContext context, {
-    required String text,
+  Widget buildCard({
+    required String title,
     required IconData icon,
-    required Color color,
-    required Widget screen,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors.last.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              )
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 38, color: Colors.white),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Colors.white,
+                ),
+              )
+            ],
           ),
         ),
-        icon: Icon(icon, color: Colors.white),
-        label: Text(
-          text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.sentiment_satisfied_alt, color: Colors.orange, size: 28),
+            SizedBox(width: 8),
+            Text(
+              "Colombo Hadaya",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+            ),
+          ],
         ),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
-        },
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            const Text(
+              "Welcome Back,",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const Text(
+              "Dealer Dashboard",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            // ---------------- PURCHASE ----------------
+            buildSectionTitle("Purchase"),
+            Row(
+              children: [
+                buildCard(
+                  title: "Today's Orders",
+                  icon: Icons.list_alt,
+                  gradientColors: [Colors.blue.shade400, Colors.blue.shade700],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TodayOrdersScreen(),
+                      ),
+                    );
+                  },
+                ),
+                buildCard(
+                  title: "Go Purchase",
+                  icon: Icons.shopping_cart,
+                  gradientColors: [Colors.orange.shade400, Colors.deepOrange.shade600],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SupplierScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ---------------- DELIVERY ----------------
+            buildSectionTitle("Deliver"),
+            Row(
+              children: [
+                buildCard(
+                  title: "Go Delivery",
+                  icon: Icons.local_shipping,
+                  gradientColors: [Colors.green.shade400, Colors.green.shade700],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DeliveryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                buildCard(
+                  title: "Contact Shops",
+                  icon: Icons.phone,
+                  gradientColors: [Colors.teal.shade400, Colors.teal.shade700],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ContactScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ---------------- ANALYTICS ----------------
+            buildSectionTitle("Analytics"),
+            Row(
+              children: [
+                buildCard(
+                  title: "Daily Report",
+                  icon: Icons.bar_chart,
+                  gradientColors: [Colors.purple.shade400, Colors.purple.shade700],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AnalyticsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                buildCard(
+                  title: "Most Wanted",
+                  icon: Icons.trending_up,
+                  gradientColors: [Colors.indigo.shade400, Colors.indigo.shade700],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MostWantedScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }

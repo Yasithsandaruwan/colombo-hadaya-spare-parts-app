@@ -1,4 +1,7 @@
+import 'ai_service.dart';
+
 class SuggestionService {
+
   static List<String> knownItems = [
     "Samsung Display",
     "iPhone Display",
@@ -10,7 +13,21 @@ class SuggestionService {
     "Mic",
   ];
 
-  static String? getSuggestion(String input) {
+  // 🔥 MAIN ENTRY
+  static Future<String?> getSuggestion(String input) async {
+
+    // 1️⃣ TRY AI FIRST
+    try {
+      final result = await AIService.classifyItem(input);
+
+      if (result.containsKey("name")) {
+        return result["name"];
+      }
+    } catch (_) {
+      // AI failed → fallback
+    }
+
+    // 2️⃣ LOCAL FALLBACK
     input = input.toLowerCase();
 
     for (var item in knownItems) {

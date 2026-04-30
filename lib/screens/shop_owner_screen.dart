@@ -16,19 +16,21 @@ class ShopOwnerScreen extends StatefulWidget {
 class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
   final itemController = TextEditingController();
   final qtyController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController shopNameController = TextEditingController();
 
   String? suggestion;
   bool isAnalyzing = false;
 
   List<OrderModel> tempOrders = [];
 
-  void checkSuggestion(String value) {
+  void checkSuggestion(String value) async {
     if (value.trim().isEmpty) {
       setState(() => suggestion = null);
       return;
     }
 
-    final result = SuggestionService.getSuggestion(value);
+    final result = await SuggestionService.getSuggestion(value);
 
     setState(() {
       suggestion =
@@ -92,6 +94,11 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
 
   void submitOrder() {
     if (tempOrders.isEmpty) return;
+
+    OrderService.saveShopContact(
+    shopNameController.text,
+    phoneController.text,
+  );
 
     for (var order in tempOrders) {
       OrderService.addOrder(order);
@@ -177,6 +184,16 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
                       decoration: const InputDecoration(
                         labelText: "Quantity",
                         border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: "Mobile Number",
                       ),
                     ),
 

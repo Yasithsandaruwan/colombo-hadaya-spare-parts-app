@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../models/order.dart';
 
 class DeliveryScreen extends StatefulWidget {
   const DeliveryScreen({super.key});
@@ -9,6 +10,7 @@ class DeliveryScreen extends StatefulWidget {
 }
 
 class _DeliveryScreenState extends State<DeliveryScreen> {
+
   @override
   Widget build(BuildContext context) {
     final grouped = OrderService.getOrdersByShop();
@@ -17,33 +19,44 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       appBar: AppBar(title: const Text("Delivery Summary")),
       backgroundColor: Colors.grey[100],
 
-      body: ListView(
-        children: grouped.entries.map((entry) {
-          double total = entry.value
-              .where((o) =>
-                  o.status == "purchased" && o.purchasePrice != null)
-              .fold(
-                  0,
-                  (sum, o) =>
-                      sum + (o.purchasePrice! * o.quantity));
+      body: grouped.isEmpty
+          ? const Center(child: Text("No Orders Yet"))
+          : ListView(
+              children: grouped.entries.map((entry) {
 
-          return Card(
-            margin: const EdgeInsets.all(10),
-            child: ExpansionTile(
-              title: Text(entry.key),
-              subtitle: Text("Total: Rs. ${total.toStringAsFixed(2)}"),
-              children: entry.value.map((o) {
-                return CheckboxListTile(
-                  value: o.isDelivered,
-                  title: Text("${o.itemName} x${o.quantity}"),
-                  onChanged: (v) =>
-                      setState(() => o.isDelivered = v!),
+                // ✅ FIXED TOTAL CALCULATION
+                double total = entry.value.fold(
+                  0,
+                  (sum, o) => sum + o.totalPrice,
+                );
+
+                return Card(
+                  margin: const EdgeInsets.all(10),
+                  child: ExpansionTile(
+                    title: Text(entry.key),
+                    subtitle: Text(
+                      "Total: Rs. ${total.toStringAsFixed(2)}",
+                    ),
+
+                    children: entry.value.map((o) {
+                      return ListTile(
+                        title: Text(o.itemName),
+
+                        subtitle: Text(
+                          "Ordered: ${o.quantity} | Remaining: ${o.remainingQuantity}",
+                        ),
+
+                        trailing: Text(
+                          "Rs. ${o.totalPrice.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 );
               }).toList(),
             ),
-          );
-        }).toList(),
-      ),
     );
   }
 }

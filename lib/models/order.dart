@@ -1,57 +1,83 @@
+class PurchaseRecord {
+  String supplierName;
+  int quantity;
+  double unitPrice;
+
+  PurchaseRecord({
+    required this.supplierName,
+    required this.quantity,
+    required this.unitPrice,
+  });
+
+  double get total => quantity * unitPrice;
+}
+
 class OrderModel {
   String itemName;
-  int quantity;
+  int quantity; // original ordered quantity
   String shopName;
+
   String? status;
 
-  double? purchasePrice;
-  bool isDelivered;
-
-  // Optional: for Firebase document ID
-  String? id;
-
-  // Optional: timestamp (useful later)
-  DateTime? timestamp;
+  List<PurchaseRecord> purchases; // 🔥 NEW
 
   OrderModel({
     required this.itemName,
     required this.quantity,
     required this.shopName,
     this.status,
-    this.purchasePrice,
-    this.isDelivered = false,
-    this.id,
-    this.timestamp,
-  });
+    List<PurchaseRecord>? purchases,
+  }) : purchases = purchases ?? [];
 
-  // Convert object to Map (for Firebase or storage)
-  Map<String, dynamic> toMap() {
-    return {
-      'itemName': itemName,
-      'quantity': quantity,
-      'shopName': shopName,
-      'status': status,
-      'purchasePrice': purchasePrice,
-      'isDelivered': isDelivered,
-      'timestamp': timestamp?.toIso8601String(),
-    };
+  // 🔥 TOTAL PURCHASED
+  int get purchasedQuantity =>
+      purchases.fold(0, (sum, p) => sum + p.quantity);
+
+  // 🔥 REMAINING
+  int get remainingQuantity => quantity - purchasedQuantity;
+
+  // 🔥 TOTAL PRICE
+  double get totalPrice =>
+      purchases.fold(0, (sum, p) => sum + p.total);
+
+  bool get isCompleted => remainingQuantity <= 0;
+
+  // 🔥 ADD PURCHASE
+  void addPurchase({
+    required String supplierName,
+    required int qty,
+    required double unitPrice,
+  }) {
+    if (qty <= 0) return;
+
+    if (qty > remainingQuantity) {
+      qty = remainingQuantity;
+    }
+
+    purchases.add(
+      PurchaseRecord(
+        supplierName: supplierName,
+        quantity: qty,
+        unitPrice: unitPrice,
+      ),
+    );
+
+    _updateStatus();
   }
 
-  // Create object from Map (from Firebase)
-  factory OrderModel.fromMap(Map<String, dynamic> map, {String? documentId}) {
-    return OrderModel(
-      id: documentId,
-      itemName: map['itemName'] ?? '',
-      quantity: map['quantity'] ?? 0,
-      shopName: map['shopName'] ?? '',
-      status: map['status'],
-      purchasePrice: map['purchasePrice'] != null
-          ? (map['purchasePrice'] as num).toDouble()
-          : null,
-      isDelivered: map['isDelivered'] ?? false,
-      timestamp: map['timestamp'] != null
-          ? DateTime.tryParse(map['timestamp'])
-          : null,
-    );
+  // 🔥 REMOVE PURCHASE (ONLY FROM ONE SUPPLIER)
+  void removePurchaseFromSupplier(String supplierName) {
+    purchases.removeWhere((p) => p.supplierName == supplierName);
+    _updateStatus();
+  }
+
+  void _updateStatus() {
+    if (purchasedQuantity == 0) {
+      status = "pending";
+    } else if (remainingQuantity == 0) {
+      status = "completed";
+    } else {
+      status = "partial";
+    }
   }
 }

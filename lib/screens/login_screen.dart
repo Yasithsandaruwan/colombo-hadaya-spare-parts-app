@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'shop_owner_screen.dart';
 import 'dealer_dashboard.dart';
+import 'chat_order_screen.dart';
+import '../services/order_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,87 +11,153 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String role = "Shop Owner";
+
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  String role = "Dealer";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF5F7FB),
+
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                )
+              ],
             ),
-            elevation: 6,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                const Center(
+                  child: Text(
                     "Colombo Hadaya",
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
+                const Text(
+                  "* Use this temporary option to replicate WhatsApp API demonstration.\nReal WhatsApp API will be integrated later.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                DropdownButtonFormField(
+                  value: role,
+                  items: const [
+                    DropdownMenuItem(value: "Dealer", child: Text("Dealer")),
+                    DropdownMenuItem(value: "Shop Owner", child: Text("Shop Owner")),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      role = val.toString();
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Select Role",
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                if (role == "Shop Owner") ...[
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(
-                      labelText: "Enter Name",
-                      border: OutlineInputBorder(),
+                      labelText: "Shop Name",
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 10),
 
-                  DropdownButtonFormField<String>(
-                    value: role,
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
+                      labelText: "Mobile Number",
                     ),
-                    items: ["Shop Owner", "Dealer"]
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                    onChanged: (value) => setState(() => role = value!),
                   ),
 
                   const SizedBox(height: 20),
+                ],
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: const EdgeInsets.all(14),
-                      ),
-                      onPressed: () {
-                        if (role == "Shop Owner") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ShopOwnerScreen(
-                                shopName: nameController.text,
-                              ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+
+                      if (role == "Dealer") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const DealerDashboard(),
+                          ),
+                        );
+                      } else {
+
+                        if (nameController.text.isEmpty ||
+                            phoneController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Enter all details"),
                             ),
                           );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const DealerDashboard(),
-                            ),
-                          );
+                          return;
                         }
-                      },
-                      child: const Text("Login"),
+
+                        // SAVE CONTACT
+                        OrderService.saveShopContact(
+                          nameController.text,
+                          phoneController.text,
+                        );
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatOrderScreen(
+                              shopName: nameController.text,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      role == "Dealer"
+                          ? "Enter Dashboard"
+                          : "Start Ordering",
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
