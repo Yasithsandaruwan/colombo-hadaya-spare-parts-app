@@ -24,6 +24,7 @@ class OrderService {
   }
 
   static Future<void> addOrder(OrderModel order) async {
+    order.scheduledFor = _scheduleFor(order.createdAt);
     try {
       final doc = await _db.collection("orders").add(order.toJson());
       order.id = doc.id;
@@ -241,6 +242,131 @@ class OrderService {
     }
 
     return grouped;
+  }
+
+  static Map<String, List<OrderModel>> getOrdersByShopForDate(DateTime date) {
+    Map<String, List<OrderModel>> grouped = {};
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      grouped.putIfAbsent(order.shopName, () => []);
+      grouped[order.shopName]!.add(order);
+    }
+    return grouped;
+  }
+
+  static Map<String, List<OrderModel>> getDueUndeliveredByShop(DateTime date) {
+    Map<String, List<OrderModel>> grouped = {};
+    for (var order in orders) {
+      if (order.isDelivered) continue;
+      if (order.scheduledFor.isAfter(_startOfDay(date))) continue;
+      grouped.putIfAbsent(order.shopName, () => []);
+      grouped[order.shopName]!.add(order);
+    }
+    return grouped;
+  }
+
+  static int getDeliveredShopCount(DateTime date) {
+    final deliveredShops = <String>{};
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      if (order.isDelivered) {
+        deliveredShops.add(order.shopName);
+      }
+    }
+    return deliveredShops.length;
+  }
+
+  static Set<String> getDeliveredShopSet(DateTime date) {
+    final deliveredShops = <String>{};
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      if (order.isDelivered) {
+        deliveredShops.add(order.shopName);
+      }
+    }
+    return deliveredShops;
+  }
+
+  static int getTotalShopCount(DateTime date) {
+    final shops = <String>{};
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      shops.add(order.shopName);
+    }
+    return shops.length;
+  }
+
+  static int getNetRevenueForDate(DateTime date) {
+    return getDeliveredShopCount(date) * 1000;
+  }
+
+  static double getSuccessRateForDate(DateTime date) {
+    final total = getTotalShopCount(date);
+    if (total == 0) return 0;
+    return (getDeliveredShopCount(date) / total) * 100;
+  }
+
+  static double getTotalSpentForDate(DateTime date) {
+    double total = 0;
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      total += order.totalPrice;
+    }
+    return total;
+  }
+
+  static double getTotalGainForDate(DateTime date) {
+    double total = 0;
+    for (var order in orders) {
+      if (!_isSameDay(order.scheduledFor, date)) continue;
+      if (order.isDelivered) {
+        total += order.totalPrice;
+      }
+    }
+    return total;
+  }
+
+  static double getOutstandingAmount(DateTime date) {
+    double total = 0;
+    for (var order in orders) {
+      if (order.isDelivered) continue;
+      if (order.scheduledFor.isAfter(_startOfDay(date))) continue;
+      total += order.totalPrice;
+    }
+    return total;
+  }
+
+  static Set<String> getOverdueShopSet(DateTime date) {
+    final overdue = <String>{};
+    for (var order in orders) {
+      if (order.isDelivered) continue;
+      if (order.scheduledFor.isBefore(_startOfDay(date))) {
+        overdue.add(order.shopName);
+      }
+    }
+    return overdue;
+  }
+
+  static DateTime _startOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  static bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  static DateTime _scheduleFor(DateTime createdAt) {
+    final cutoff = DateTime(
+      createdAt.year,
+      createdAt.month,
+      createdAt.day,
+      14,
+      0,
+    );
+    final baseDay = createdAt.isAfter(cutoff)
+        ? DateTime(createdAt.year, createdAt.month, createdAt.day + 1)
+        : DateTime(createdAt.year, createdAt.month, createdAt.day);
+    return DateTime(baseDay.year, baseDay.month, baseDay.day);
   }
 
   // STORE SHOP CONTACTS

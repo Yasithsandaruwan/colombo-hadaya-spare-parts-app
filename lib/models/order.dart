@@ -34,6 +34,8 @@ class OrderModel {
   int quantity; // original ordered quantity
   String shopName;
   DateTime createdAt;
+  DateTime scheduledFor;
+  DateTime? deliveredAt;
 
   String? status;
 
@@ -45,9 +47,13 @@ class OrderModel {
     required this.quantity,
     required this.shopName,
     DateTime? createdAt,
+    DateTime? scheduledFor,
+    DateTime? deliveredAt,
     this.status,
     List<PurchaseRecord>? purchases,
   })  : createdAt = createdAt ?? DateTime.now(),
+        scheduledFor = scheduledFor ?? _scheduleFor(createdAt ?? DateTime.now()),
+        deliveredAt = deliveredAt,
         purchases = purchases ?? [];
 
   Map<String, dynamic> toJson() {
@@ -56,6 +62,8 @@ class OrderModel {
       "quantity": quantity,
       "shopName": shopName,
       "createdAt": createdAt.toIso8601String(),
+      "scheduledFor": scheduledFor.toIso8601String(),
+      "deliveredAt": deliveredAt?.toIso8601String(),
       "status": status,
       "purchases": purchases.map((p) => p.toJson()).toList(),
     };
@@ -63,12 +71,18 @@ class OrderModel {
 
   static OrderModel fromJson(Map<String, dynamic> json, {String? id}) {
     final purchasesJson = (json["purchases"] as List<dynamic>?) ?? [];
+    final createdAt = DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now();
+    final scheduledFor = DateTime.tryParse(json["scheduledFor"] ?? "") ??
+        _scheduleFor(createdAt);
+    final deliveredAt = DateTime.tryParse(json["deliveredAt"] ?? "");
     return OrderModel(
       id: id,
       itemName: json["itemName"] ?? "",
       quantity: (json["quantity"] ?? 0) as int,
       shopName: json["shopName"] ?? "",
-      createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
+      createdAt: createdAt,
+      scheduledFor: scheduledFor,
+      deliveredAt: deliveredAt,
       status: json["status"],
       purchases: purchasesJson
           .map((p) => PurchaseRecord.fromJson(Map<String, dynamic>.from(p)))
@@ -88,6 +102,12 @@ class OrderModel {
       purchases.fold(0, (sum, p) => sum + p.total);
 
   bool get isCompleted => remainingQuantity <= 0;
+
+  bool get isDelivered => deliveredAt != null;
+
+  void markDelivered() {
+    deliveredAt = DateTime.now();
+  }
 
   // 🔥 ADD PURCHASE
   void addPurchase({
@@ -126,5 +146,19 @@ class OrderModel {
     } else {
       status = "partial";
     }
+  }
+
+  static DateTime _scheduleFor(DateTime createdAt) {
+    final cutoff = DateTime(
+      createdAt.year,
+      createdAt.month,
+      createdAt.day,
+      14,
+      0,
+    );
+    final baseDay = createdAt.isAfter(cutoff)
+        ? DateTime(createdAt.year, createdAt.month, createdAt.day + 1)
+        : DateTime(createdAt.year, createdAt.month, createdAt.day);
+    return DateTime(baseDay.year, baseDay.month, baseDay.day);
   }
 }

@@ -14,7 +14,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final grouped = OrderService.getOrdersByShop();
+    final today = DateTime.now();
+    final grouped = OrderService.getDueUndeliveredByShop(today);
+    final overdueShops = OrderService.getOverdueShopSet(today);
 
     return Scaffold(
       appBar: AppBar(
@@ -70,10 +72,57 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 );
                 total += 1000;
 
+                final isOverdue = overdueShops.contains(entry.key);
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ExpansionTile(
-                    title: Text(entry.key),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            entry.key,
+                            style: TextStyle(
+                              color: isOverdue ? Colors.red : null,
+                              fontWeight: isOverdue ? FontWeight.w600 : null,
+                            ),
+                          ),
+                        ),
+                        Checkbox(
+                          value: false,
+                          onChanged: (_) async {
+                            final confirm = await showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text("Confirm Delivery"),
+                                content: Text(
+                                  "Are you sure delivered to ${entry.key}?",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text("Yes"),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              for (final order in entry.value) {
+                                order.markDelivered();
+                                await OrderService.saveOrder(order);
+                              }
+                              if (context.mounted) {
+                                setState(() {});
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                     subtitle: Text(
                       "Total: Rs. ${total.toStringAsFixed(2)}",
                     ),

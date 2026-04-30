@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'supplier_screen.dart';
 import 'delivery_screen.dart';
 import 'analytics_screen.dart';
+import 'earnings_screen.dart';
 import 'contact_screen.dart';
 import 'today_orders_screen.dart'; // <-- New import
 import 'most_wanted_screen.dart';  // <-- New import
@@ -80,10 +81,6 @@ class DealerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalOrders = OrderService.orders.length;
-    final activeShops = OrderService.getOrdersByShop().length;
-    final netRevenue = activeShops * 1000;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF3F5F8),
       appBar: AppBar(
@@ -127,32 +124,7 @@ class DealerDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
 
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _StatItem(label: "Orders", value: "$totalOrders"),
-                  _StatDivider(),
-                  _StatItem(label: "Today's Net Revenue", value: "$netRevenue"),
-                  _StatDivider(),
-                  _StatItem(label: "Shops", value: "$activeShops"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 22),
+            const SizedBox(height: 10),
 
             // ---------------- PURCHASE ----------------
             buildSectionTitle("Purchase"),
@@ -254,53 +226,28 @@ class DealerDashboard extends StatelessWidget {
                 ),
               ],
             ),
+            Row(
+              children: [
+                buildCard(
+                  title: "Earnings",
+                  icon: Icons.auto_graph,
+                  accentColor: const Color(0xFF2E7D32),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EarningsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Expanded(child: SizedBox()),
+              ],
+            ),
             const SizedBox(height: 30),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _StatItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF607D8B),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF263238),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 36,
-      color: const Color(0xFFE0E0E0),
     );
   }
 }

@@ -1,40 +1,26 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
-import 'tomorrow_orders_screen.dart';
 
-class TodayOrdersScreen extends StatelessWidget {
-  const TodayOrdersScreen({super.key});
+class TomorrowOrdersScreen extends StatelessWidget {
+  const TomorrowOrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final grouped = OrderService.getOrdersByShopForDate(today);
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final grouped = OrderService.getOrdersByShopForDate(tomorrow);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Today's Orders"),
+        title: const Text("Tomorrow's Orders"),
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF263238),
         elevation: 0.5,
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const TomorrowOrdersScreen(),
-                ),
-              );
-            },
-            child: const Text("Tomorrow"),
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFFF3F5F8),
       body: grouped.isEmpty
           ? const Center(
               child: Text(
-                "No orders today.",
+                "No orders for tomorrow.",
                 style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             )
@@ -72,9 +58,9 @@ class TodayOrdersScreen extends StatelessWidget {
                             ),
                             child: Text(
                               "x${o.quantity}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E88E5),
+                                color: Color(0xFF1E88E5),
                                 fontSize: 14,
                               ),
                             ),

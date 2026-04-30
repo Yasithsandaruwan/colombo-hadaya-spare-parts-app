@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AIService {
   static const String apiKey =
-  "##############################################################";
+  "####################################################";
 
   static const Map<String, List<String>> _typeKeywords = {
     "Battery": ["battery"],
