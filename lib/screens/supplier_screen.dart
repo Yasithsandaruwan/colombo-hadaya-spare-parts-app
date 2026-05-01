@@ -18,54 +18,122 @@ class _SupplierScreenState extends State<SupplierScreen> {
     TextEditingController priceController = TextEditingController();
     TextEditingController qtyController =
         TextEditingController(text: order.remainingQuantity.toString());
+    final matchingOrders = OrderService.orders.where((o) {
+      return _normalizeItem(o.itemName) == _normalizeItem(order.itemName);
+    }).toList();
+    final selected = <OrderModel, bool>{
+      for (final o in matchingOrders) o: false,
+    };
 
     await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Buy from $supplierName"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Unit Price"),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          int selectedQty = 0;
+          for (final entry in selected.entries) {
+            if (entry.value) {
+              selectedQty += entry.key.remainingQuantity;
+            }
+          }
+
+          if (selectedQty > 0) {
+            qtyController.text = selectedQty.toString();
+          }
+
+          return AlertDialog(
+            title: Text("Buy from $supplierName"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Unit Price"),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: qtyController,
+                    keyboardType: TextInputType.number,
+                    readOnly: selectedQty > 0,
+                    decoration: const InputDecoration(labelText: "Quantity"),
+                  ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Shop orders",
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...matchingOrders.map((o) {
+                    final label = o.isCompleted
+                        ? "Completed x ${o.quantity}"
+                        : o.purchasedQuantity > 0
+                            ? "Buy ${o.remainingQuantity} more"
+                            : "Buy ${o.remainingQuantity}";
+                    return CheckboxListTile(
+                      value: selected[o] ?? false,
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selected[o] = val ?? false;
+                        });
+                      },
+                      title: Text(o.shopName),
+                      subtitle: Text(label),
+                      contentPadding: EdgeInsets.zero,
+                    );
+                  }),
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Quantity"),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              double price =
-                  double.tryParse(priceController.text) ?? 0;
-              int qty =
-                  int.tryParse(qtyController.text) ?? 0;
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel")),
+              ElevatedButton(
+                onPressed: () {
+                  final price =
+                      double.tryParse(priceController.text) ?? 0;
+                  if (selectedQty > 0) {
+                    setState(() {
+                      for (final entry in selected.entries) {
+                        if (!entry.value) continue;
+                        final targetOrder = entry.key;
+                        final qty = targetOrder.remainingQuantity;
+                        if (qty <= 0) continue;
+                        targetOrder.addPurchase(
+                          supplierName: supplierName,
+                          qty: qty,
+                          unitPrice: price,
+                        );
+                        OrderService.saveOrder(targetOrder);
+                      }
+                    });
+                    Navigator.pop(context);
+                    return;
+                  }
 
-              if (qty <= 0) return;
+                  final qty = int.tryParse(qtyController.text) ?? 0;
+                  if (qty <= 0) return;
 
-              setState(() {
-                order.addPurchase(
-                  supplierName: supplierName,
-                  qty: qty,
-                  unitPrice: price,
-                );
-              });
+                  setState(() {
+                    order.addPurchase(
+                      supplierName: supplierName,
+                      qty: qty,
+                      unitPrice: price,
+                    );
+                  });
 
-              OrderService.saveOrder(order);
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
-          ),
-        ],
+                  OrderService.saveOrder(order);
+                  Navigator.pop(context);
+                },
+                child: const Text("Save"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -189,10 +257,19 @@ class _SupplierScreenState extends State<SupplierScreen> {
                       ),
 
                       // ITEMS
-                      ...entry.value.map((o) {
-
-                        final purchasedHere = o.purchases
-                            .any((p) => p.supplierName == supplierName);
+                      ..._groupOrdersByItem(entry.value).map((group) {
+                        final representative = group.orders.first;
+                        final purchasedHere = group.orders.any(
+                          (o) => o.purchases.any(
+                            (p) => p.supplierName == supplierName,
+                          ),
+                        );
+                        final isCompleted = group.totalRemaining <= 0;
+                        final label = isCompleted
+                            ? "Completed x ${group.totalOrdered}"
+                            : group.totalPurchased > 0
+                                ? "Buy ${group.totalRemaining} more"
+                                : "Buy ${group.totalRemaining}";
 
                         return Container(
                           padding: const EdgeInsets.all(10),
@@ -205,30 +282,23 @@ class _SupplierScreenState extends State<SupplierScreen> {
                           ),
                           child: Row(
                             children: [
-
                               // ITEM
                               Expanded(
                                 flex: 3,
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      o.itemName,
+                                      representative.itemName,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-
                                     Text(
-                                      o.isCompleted
-                                          ? "Completed x ${o.quantity}"
-                                          : o.purchasedQuantity > 0
-                                              ? "Buy ${o.remainingQuantity} more"
-                                              : "Buy ${o.remainingQuantity}",
+                                      label,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: o.isCompleted
+                                        color: isCompleted
                                             ? Colors.green
                                             : Colors.grey,
                                       ),
@@ -242,7 +312,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                 child: Checkbox(
                                   value: purchasedHere,
                                   onChanged: (_) =>
-                                      markAsPurchased(o, supplierName),
+                                      markAsPurchased(representative, supplierName),
                                 ),
                               ),
 
@@ -251,7 +321,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                 child: Checkbox(
                                   value: false,
                                   onChanged: (_) =>
-                                      undoPurchase(o, supplierName),
+                                      undoPurchase(representative, supplierName),
                                 ),
                               ),
                             ],
@@ -265,4 +335,44 @@ class _SupplierScreenState extends State<SupplierScreen> {
             ),
     );
   }
+
+  String _normalizeItem(String value) {
+    return value.toLowerCase().replaceAll(RegExp(r"\s+"), " ").trim();
+  }
+
+  List<_ItemGroup> _groupOrdersByItem(List<OrderModel> orders) {
+    final groups = <String, List<OrderModel>>{};
+    for (final order in orders) {
+      final key = _normalizeItem(order.itemName);
+      groups.putIfAbsent(key, () => []).add(order);
+    }
+
+    return groups.values.map((items) {
+      final totalOrdered = items.fold<int>(0, (sum, o) => sum + o.quantity);
+      final totalRemaining =
+          items.fold<int>(0, (sum, o) => sum + o.remainingQuantity);
+      final totalPurchased =
+          items.fold<int>(0, (sum, o) => sum + o.purchasedQuantity);
+      return _ItemGroup(
+        orders: items,
+        totalOrdered: totalOrdered,
+        totalRemaining: totalRemaining,
+        totalPurchased: totalPurchased,
+      );
+    }).toList();
+  }
+}
+
+class _ItemGroup {
+  final List<OrderModel> orders;
+  final int totalOrdered;
+  final int totalRemaining;
+  final int totalPurchased;
+
+  const _ItemGroup({
+    required this.orders,
+    required this.totalOrdered,
+    required this.totalRemaining,
+    required this.totalPurchased,
+  });
 }
