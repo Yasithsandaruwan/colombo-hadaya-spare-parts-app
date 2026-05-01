@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
 import 'tomorrow_orders_screen.dart';
+import '../widgets/footer_strip.dart';
 
 class TodayOrdersScreen extends StatelessWidget {
   const TodayOrdersScreen({super.key});
@@ -13,9 +14,6 @@ class TodayOrdersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Today's Orders"),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF263238),
-        elevation: 0.5,
         actions: [
           TextButton(
             onPressed: () {
@@ -30,7 +28,6 @@ class TodayOrdersScreen extends StatelessWidget {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF3F5F8),
       body: grouped.isEmpty
           ? const Center(
               child: Text(
@@ -59,7 +56,9 @@ class TodayOrdersScreen extends StatelessWidget {
                       return Container(
                         decoration: BoxDecoration(
                           border: Border(
-                            top: BorderSide(color: Colors.grey.shade200),
+                            top: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                            ),
                           ),
                         ),
                         child: ListTile(
@@ -86,6 +85,7 @@ class TodayOrdersScreen extends StatelessWidget {
                 );
               }).toList(),
             ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

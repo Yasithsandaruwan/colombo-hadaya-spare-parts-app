@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});
@@ -11,11 +13,7 @@ class ContactScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Contact Delivery Shops"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF5F7FB),
 
       body: contacts.isEmpty
           ? const Center(
@@ -35,11 +33,11 @@ class ContactScreen extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(vertical: 6),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.06),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       )
@@ -47,7 +45,10 @@ class ContactScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.store, color: Colors.teal),
+                      Icon(
+                        Icons.store,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 10),
 
                       Expanded(
@@ -64,18 +65,35 @@ class ContactScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               phone,
-                              style: const TextStyle(color: Colors.grey),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
                             ),
                           ],
                         ),
                       ),
 
                       IconButton(
-                        icon: const Icon(Icons.phone, color: Colors.green),
-                        onPressed: () {
+                        icon: Icon(
+                          Icons.phone,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed: () async {
+                          final cleanedPhone =
+                              phone.replaceAll(RegExp(r'[^0-9+]'), '');
+                          final uri = Uri(scheme: 'tel', path: cleanedPhone);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                            return;
+                          }
+
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Call $phone"),
+                            const SnackBar(
+                              content: Text("Unable to open dialer"),
                             ),
                           );
                         },
@@ -85,6 +103,7 @@ class ContactScreen extends StatelessWidget {
                 );
               },
             ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

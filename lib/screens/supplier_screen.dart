@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
 import 'delivery_screen.dart';
+import '../widgets/footer_strip.dart';
 
 class SupplierScreen extends StatefulWidget {
   const SupplierScreen({super.key});
@@ -12,7 +13,7 @@ class SupplierScreen extends StatefulWidget {
 
 class _SupplierScreenState extends State<SupplierScreen> {
 
-  // 🔥 BUY FROM SUPPLIER
+  // BUY FROM SUPPLIER
   void markAsPurchased(OrderModel order, String supplierName) async {
 
     TextEditingController priceController = TextEditingController();
@@ -138,7 +139,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
     );
   }
 
-  // 🔥 UNDO ONLY THIS SUPPLIER
+  // UNDO ONLY THIS SUPPLIER
   void undoPurchase(OrderModel order, String supplierName) async {
 
     final hasPurchase = order.purchases
@@ -216,7 +217,6 @@ class _SupplierScreenState extends State<SupplierScreen> {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF5F7FB),
 
       body: grouped.isEmpty
           ? const Center(child: Text("No Orders Yet"))
@@ -242,7 +242,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(12),
                           ),
@@ -276,7 +276,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: Colors.grey.shade200,
+                                color: Theme.of(context).dividerColor,
                               ),
                             ),
                           ),
@@ -300,7 +300,9 @@ class _SupplierScreenState extends State<SupplierScreen> {
                                         fontSize: 12,
                                         color: isCompleted
                                             ? Colors.green
-                                            : Colors.grey,
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .outline,
                                       ),
                                     ),
                                   ],
@@ -333,6 +335,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
                 );
               }).toList(),
             ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 

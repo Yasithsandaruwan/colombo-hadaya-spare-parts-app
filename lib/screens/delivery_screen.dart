@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
-import '../models/order.dart';
 import 'analytics_screen.dart';
+import '../widgets/footer_strip.dart';
 
 class DeliveryScreen extends StatefulWidget {
   const DeliveryScreen({super.key});
@@ -21,9 +21,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Delivery Summary"),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF263238),
-        elevation: 0.5,
         actions: [
           TextButton(
             onPressed: () async {
@@ -58,14 +55,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF3F5F8),
 
       body: grouped.isEmpty
           ? const Center(child: Text("No Orders Yet"))
           : ListView(
               children: grouped.entries.map((entry) {
 
-                // ✅ FIXED TOTAL CALCULATION
+                //  TOTAL CALCULATION
                 double total = entry.value.fold(
                   0,
                   (sum, o) => sum + o.totalPrice,
@@ -134,7 +130,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         subtitle: Text(
                           o.remainingQuantity > 0
                               ? "Ordered: ${o.quantity} | Buy ${o.remainingQuantity} more"
-                              : "Ordered: ${o.quantity} | fulfilled",
+                              : "Ordered: ${o.quantity} | Fulfilled",
+                          style: o.remainingQuantity > 0
+                              ? null
+                              : const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
                         ),
 
                         trailing: Text(
@@ -157,6 +159,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 );
               }).toList(),
             ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

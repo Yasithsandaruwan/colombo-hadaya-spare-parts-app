@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class EarningsScreen extends StatelessWidget {
   const EarningsScreen({super.key});
@@ -16,11 +17,7 @@ class EarningsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Earnings"),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF263238),
-        elevation: 0.5,
       ),
-      backgroundColor: const Color(0xFFF3F5F8),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -31,13 +28,16 @@ class EarningsScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               "Updates at 11:59 PM each day",
-              style: TextStyle(fontSize: 12, color: Color(0xFF607D8B)),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ),
             const SizedBox(height: 16),
             Card(
@@ -54,12 +54,12 @@ class EarningsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Last 30 Days",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -79,6 +79,7 @@ class EarningsScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 

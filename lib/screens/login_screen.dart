@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dealer_dashboard.dart';
 import 'chat_order_screen.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,19 +21,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
-
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.15),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 )
@@ -43,10 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                const Center(
+                Center(
                   child: Column(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 34,
                         backgroundColor: Color(0xFF25D366),
                         child: Icon(
@@ -55,20 +54,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           size: 36,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         "Colombo Hadaya",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         "Order parts faster via chat",
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.black54,
+                          color: Theme.of(context).colorScheme.outline,
                         ),
                       ),
                     ],
@@ -78,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 10),
 
                 const Text(
-                  "* Demo only: WhatsApp API is paid, so this is a simple replication. Real WhatsApp Business API will be used later.",
+                  "* Demo only: Since WhatsApp API is a paid service, this is a simple replication. Real WhatsApp Business API will be used later in Real-World Application.",
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
@@ -90,48 +89,90 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE7F6EC),
+                    color: Theme.of(context).colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFBFE8CC)),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Row(
                         children: [
-                          Icon(Icons.info_outline, size: 16, color: Color(0xFF075E54)),
-                          SizedBox(width: 6),
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
                           Text(
                             "Quick tips",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF075E54),
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
-                          SizedBox(width: 6),
-                          Expanded(child: Text("First login as shop owner and make some orders")),
+                          Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              "First select role as shop owner and login to make some orders(Whatsapp chat Demo) to create dummy data(Replication of WhatsApp Business API)",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
-                          SizedBox(width: 6),
-                          Expanded(child: Text("Use 'item x qty' to add parts")),
+                          Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              "Use 'item x qty' to add parts",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Icon(Icons.check_circle, size: 16, color: Color(0xFF25D366)),
-                          SizedBox(width: 6),
-                          Expanded(child: Text("Type 'submit' to place the order")),
+                          Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              "Type 'submit' to place the order",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -237,6 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

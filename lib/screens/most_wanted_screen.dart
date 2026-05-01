@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class MostWantedScreen extends StatefulWidget {
   const MostWantedScreen({super.key});
@@ -33,7 +34,7 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
     );
   }
 
-  Widget buildItemList(Map<String, int> items) {
+  Widget buildItemList(BuildContext context, Map<String, int> items) {
     if (items.isEmpty) {
       return const Center(
         child: Text(
@@ -54,8 +55,11 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: CircleAvatar(
-              backgroundColor: Colors.indigo.shade100,
-              child: Icon(Icons.trending_up, color: Colors.indigo.shade700),
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Icon(
+                Icons.trending_up,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             title: Text(
               e.key,
@@ -75,7 +79,7 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
     );
   }
 
-  Widget buildSuggestions(List<String> suggestions) {
+  Widget buildSuggestions(BuildContext context, List<String> suggestions) {
     if (suggestions.isEmpty) {
       return const Card(
         child: ListTile(
@@ -88,7 +92,10 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
       children: suggestions.map((item) {
         return Card(
           child: ListTile(
-            leading: const Icon(Icons.trending_up),
+            leading: Icon(
+              Icons.trending_up,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: Text(item),
             subtitle: const Text("Consider stocking for bulk profit"),
           ),
@@ -109,19 +116,16 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Most Wanted Items & Older Reports"),
-        backgroundColor: Colors.indigo.shade700,
-        foregroundColor: Colors.white,
       ),
-      backgroundColor: const Color(0xFFF5F7FB),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.indigo.shade100),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -144,19 +148,20 @@ class _MostWantedScreenState extends State<MostWantedScreen> {
             selectedRange == "Weekly"
                 ? "Fast-selling items (last 7 days)"
                 : "Fast-selling items (last 30 days)",
-            style: const TextStyle(color: Colors.grey),
+            style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
           const SizedBox(height: 8),
-          buildItemList(items),
+          buildItemList(context, items),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "Stock suggestions",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
           const SizedBox(height: 8),
-          buildSuggestions(suggestions),
+          buildSuggestions(context, suggestions),
         ],
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

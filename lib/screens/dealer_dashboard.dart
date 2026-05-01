@@ -4,22 +4,23 @@ import 'delivery_screen.dart';
 import 'analytics_screen.dart';
 import 'earnings_screen.dart';
 import 'contact_screen.dart';
-import 'today_orders_screen.dart'; // <-- New import
-import 'most_wanted_screen.dart';  // <-- New import
-import '../services/order_service.dart';
+import 'today_orders_screen.dart'; 
+import 'most_wanted_screen.dart'; 
+import '../services/theme_service.dart';
+import '../widgets/footer_strip.dart';
 
 class DealerDashboard extends StatelessWidget {
   const DealerDashboard({super.key});
 
-  Widget buildSectionTitle(String title) {
+  Widget buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF263238),
+          color: Theme.of(context).colorScheme.onSurface,
           letterSpacing: 0.5,
         ),
       ),
@@ -27,6 +28,7 @@ class DealerDashboard extends StatelessWidget {
   }
 
   Widget buildCard({
+    required BuildContext context,
     required String title,
     required IconData icon,
     required Color accentColor,
@@ -39,7 +41,7 @@ class DealerDashboard extends StatelessWidget {
           margin: const EdgeInsets.all(8),
           padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: accentColor.withOpacity(0.18)),
             boxShadow: [
@@ -66,10 +68,10 @@ class DealerDashboard extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
-                  color: Color(0xFF263238),
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               )
             ],
@@ -82,7 +84,6 @@ class DealerDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F5F8),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -99,10 +100,25 @@ class DealerDashboard extends StatelessWidget {
             ),
           ],
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF263238),
-        elevation: 0.5,
         centerTitle: true,
+        actions: [
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: ThemeService.mode,
+            builder: (context, mode, _) {
+              final effectiveIsDark =
+                  Theme.of(context).brightness == Brightness.dark;
+              return IconButton(
+                icon: Icon(
+                  effectiveIsDark ? Icons.wb_sunny : Icons.nights_stay,
+                ),
+                onPressed: () =>
+                    ThemeService.toggle(Theme.of(context).brightness),
+                tooltip: effectiveIsDark ? "Light mode" : "Dark mode",
+              );
+            },
+          ),
+          const SizedBox(width: 6),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -110,27 +126,29 @@ class DealerDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            const Text(
+            Text(
               "Welcome back",
-              style: TextStyle(fontSize: 14, color: Color(0xFF607D8B)),
-            ),
-            const Text(
-              "Dealer Dashboard",
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF263238),
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.outline,
               ),
+            ),
+            Text(
+              "Dealer Dashboard",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
             const SizedBox(height: 14),
 
             const SizedBox(height: 10),
 
             // ---------------- PURCHASE ----------------
-            buildSectionTitle("Purchase"),
+            buildSectionTitle(context, "Purchase"),
             Row(
               children: [
                 buildCard(
+                  context: context,
                   title: "Today's Orders",
                   icon: Icons.list_alt,
                   accentColor: const Color(0xFF1E88E5),
@@ -144,6 +162,7 @@ class DealerDashboard extends StatelessWidget {
                   },
                 ),
                 buildCard(
+                  context: context,
                   title: "Go Purchase",
                   icon: Icons.shopping_cart,
                   accentColor: const Color(0xFFF57C00),
@@ -160,11 +179,12 @@ class DealerDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // ---------------- DELIVERY ----------------
-            buildSectionTitle("Deliver"),
+            // DELIVERY
+            buildSectionTitle(context, "Deliver"),
             Row(
               children: [
                 buildCard(
+                  context: context,
                   title: "Go Delivery",
                   icon: Icons.local_shipping,
                   accentColor: const Color(0xFF2E7D32),
@@ -178,6 +198,7 @@ class DealerDashboard extends StatelessWidget {
                   },
                 ),
                 buildCard(
+                  context: context,
                   title: "Contact Shops",
                   icon: Icons.phone,
                   accentColor: const Color(0xFF00897B),
@@ -194,11 +215,12 @@ class DealerDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // ---------------- ANALYTICS ----------------
-            buildSectionTitle("Analytics"),
+            // ANALYTICS 
+            buildSectionTitle(context, "Analytics"),
             Row(
               children: [
                 buildCard(
+                  context: context,
                   title: "Daily Report",
                   icon: Icons.bar_chart,
                   accentColor: const Color(0xFF3949AB),
@@ -212,6 +234,7 @@ class DealerDashboard extends StatelessWidget {
                   },
                 ),
                 buildCard(
+                  context: context,
                   title: "Most Wanted",
                   icon: Icons.trending_up,
                   accentColor: const Color(0xFF1565C0),
@@ -229,6 +252,7 @@ class DealerDashboard extends StatelessWidget {
             Row(
               children: [
                 buildCard(
+                  context: context,
                   title: "Earnings",
                   icon: Icons.auto_graph,
                   accentColor: const Color(0xFF2E7D32),
@@ -248,6 +272,7 @@ class DealerDashboard extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

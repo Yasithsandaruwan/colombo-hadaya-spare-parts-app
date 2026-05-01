@@ -39,7 +39,7 @@ class OrderModel {
 
   String? status;
 
-  List<PurchaseRecord> purchases; // 🔥 NEW
+  List<PurchaseRecord> purchases; // NEW
 
   OrderModel({
     this.id,
@@ -90,14 +90,14 @@ class OrderModel {
     );
   }
 
-  // 🔥 TOTAL PURCHASED
+  //  TOTAL PURCHASED
   int get purchasedQuantity =>
       purchases.fold(0, (sum, p) => sum + p.quantity);
 
-  // 🔥 REMAINING
+  //  REMAINING
   int get remainingQuantity => quantity - purchasedQuantity;
 
-  // 🔥 TOTAL PRICE
+  //  TOTAL PRICE
   double get totalPrice =>
       purchases.fold(0, (sum, p) => sum + p.total);
 
@@ -109,7 +109,7 @@ class OrderModel {
     deliveredAt = DateTime.now();
   }
 
-  // 🔥 ADD PURCHASE
+  //  ADD PURCHASE
   void addPurchase({
     required String supplierName,
     required int qty,
@@ -132,7 +132,7 @@ class OrderModel {
     _updateStatus();
   }
 
-  // 🔥 REMOVE PURCHASE (ONLY FROM ONE SUPPLIER)
+  //  REMOVE PURCHASE 
   void removePurchaseFromSupplier(String supplierName) {
     purchases.removeWhere((p) => p.supplierName == supplierName);
     _updateStatus();

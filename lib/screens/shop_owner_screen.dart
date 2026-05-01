@@ -3,6 +3,7 @@ import '../models/order.dart';
 import '../services/order_service.dart';
 import '../services/suggestion_service.dart';
 import '../services/ai_service.dart';
+import '../widgets/footer_strip.dart';
 
 class ShopOwnerScreen extends StatefulWidget {
   final String shopName;
@@ -68,7 +69,7 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
   void addItem() async {
     if (itemController.text.isEmpty || qtyController.text.isEmpty) return;
 
-    // 🔥 Run AI before adding
+    // Run Ai before adding
     await analyzeItem();
 
     setState(() {
@@ -123,13 +124,11 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
         title: Text(widget.shopName),
         centerTitle: true,
       ),
-      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Card(
-              elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -149,7 +148,7 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
                       },
                     ),
 
-                    // 🔵 AI Loading Indicator
+                    //  Loading Indicator
                     if (isAnalyzing)
                       const Padding(
                         padding: EdgeInsets.only(top: 8),
@@ -251,6 +250,7 @@ class _ShopOwnerScreenState extends State<ShopOwnerScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

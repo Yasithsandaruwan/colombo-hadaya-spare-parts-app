@@ -13,10 +13,10 @@ class SuggestionService {
     "Mic",
   ];
 
-  // 🔥 MAIN ENTRY
+  // MAIN ENTRY
   static Future<String?> getSuggestion(String input) async {
 
-    // 1️⃣ TRY AI FIRST
+    // 1️TRY AI 
     try {
       final result = await AIService.classifyItem(input);
 
@@ -24,10 +24,10 @@ class SuggestionService {
         return result["name"];
       }
     } catch (_) {
-      // AI failed → fallback
+      // AI failed 
     }
 
-    // 2️⃣ LOCAL FALLBACK
+    // LOCAL FALLBACK
     input = input.toLowerCase();
 
     for (var item in knownItems) {

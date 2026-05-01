@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -36,7 +37,6 @@ class AnalyticsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("End of Day Report")),
-      backgroundColor: Colors.grey[100],
 
       body: ListView(
         padding: const EdgeInsets.all(12),
@@ -111,6 +111,7 @@ class AnalyticsScreen extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }

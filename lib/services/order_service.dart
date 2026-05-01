@@ -168,7 +168,7 @@ class OrderService {
     ]),
   ];
 
-  // ---------------- MATCHING LOGIC ----------------
+  //MATCHING LOGIC 
 
   static List<String> getAllMatchingSuppliers(String itemName) {
     String item = itemName.toLowerCase();
@@ -186,7 +186,7 @@ class OrderService {
     return matches;
   }
 
-  // ---------------- GROUP BY SUPPLIER ----------------
+  // GROUP BY SUPPLIER
 
   static Map<String, List<OrderModel>> getGroupedBySupplier() {
     Map<String, List<OrderModel>> grouped = {};
@@ -210,7 +210,7 @@ class OrderService {
     return grouped;
   }
 
-  // ---------------- ANALYTICS ----------------
+  // ANALYTICS
 
   static double getTotalCost() {
     double total = 0;
@@ -424,7 +424,7 @@ class OrderService {
     return sorted;
   }
 
-  // ---------------- REPORTING ----------------
+  // REPORTING 
 
   static List<OrderModel> getOrdersInRange(DateTime from, DateTime to) {
     return orders

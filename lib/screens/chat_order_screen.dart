@@ -86,7 +86,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       return;
     }
 
-    // 🔥 AI Correction (SAFE)
+    //  AI Correction
     String corrected = input;
     try {
       final suggestion = await SuggestionService.getSuggestion(input);
@@ -104,7 +104,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
   Future<void> processMessage(String input) async {
     String lower = input.toLowerCase();
 
-    // -------- SUBMIT --------
+    // SUBMIT
     if (lower == "submit") {
 
       if (tempOrders.isEmpty) {
@@ -128,7 +128,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       return;
     }
 
-    // -------- DELETE --------
+    //  DELETE 
     if (lower.startsWith("del ") || lower.startsWith("delete ")) {
       final itemName = lower.startsWith("delete ")
           ? input.substring(7).trim()
@@ -150,7 +150,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
       return;
     }
 
-    // -------- ADD ITEM --------
+    //  ADD ITEM 
     RegExp regex = RegExp(r"(.+?)\s*x\s*(\d+)", caseSensitive: false);
     var match = regex.firstMatch(input);
 
@@ -199,6 +199,9 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
   // CHAT BUBBLE
   Widget buildMessage(Map msg) {
     bool isUser = msg["isUser"];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final userBubble = isDark ? const Color(0xFF005C4B) : const Color(0xFFDCF8C6);
+    final botBubble = isDark ? const Color(0xFF1F2C34) : Colors.white;
 
     return Row(
       mainAxisAlignment:
@@ -209,7 +212,7 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           constraints: const BoxConstraints(maxWidth: 280),
           decoration: BoxDecoration(
-            color: isUser ? const Color(0xFFDCF8C6) : Colors.white,
+            color: isUser ? userBubble : botBubble,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(14),
               topRight: const Radius.circular(14),
@@ -220,14 +223,20 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.08),
                 blurRadius: 4,
               )
             ],
           ),
           child: Text(
             msg["text"],
-            style: const TextStyle(fontSize: 15, height: 1.35),
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.35,
+              color: isUser
+                  ? (isDark ? Colors.white : Colors.black)
+                  : Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
       ],
@@ -248,11 +257,17 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final chatBackground =
+        isDark ? const Color(0xFF0B141A) : const Color(0xFFECE5DD);
+    final appBarColor =
+        isDark ? const Color(0xFF202C33) : const Color(0xFF075E54);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFECE5DD),
+      backgroundColor: chatBackground,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF075E54),
+        backgroundColor: appBarColor,
         titleSpacing: 0,
         title: Row(
           children: [
@@ -302,14 +317,14 @@ class _ChatOrderScreenState extends State<ChatOrderScreen> {
           // INPUT BAR
           Container(
             padding: const EdgeInsets.fromLTRB(8, 6, 8, 10),
-            color: const Color(0xFFECE5DD),
+            color: chatBackground,
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: TextField(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/order_service.dart';
+import '../widgets/footer_strip.dart';
 
 class TomorrowOrdersScreen extends StatelessWidget {
   const TomorrowOrdersScreen({super.key});
@@ -12,15 +13,12 @@ class TomorrowOrdersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Tomorrow's Orders"),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF263238),
-        elevation: 0.5,
       ),
-      backgroundColor: const Color(0xFFF3F5F8),
       body: grouped.isEmpty
           ? const Center(
               child: Text(
-                "No orders for tomorrow.",
+                "No orders for tomorrow yet.\nCheck after 2:00 PM.",
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             )
@@ -45,7 +43,9 @@ class TomorrowOrdersScreen extends StatelessWidget {
                       return Container(
                         decoration: BoxDecoration(
                           border: Border(
-                            top: BorderSide(color: Colors.grey.shade200),
+                            top: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                            ),
                           ),
                         ),
                         child: ListTile(
@@ -72,6 +72,7 @@ class TomorrowOrdersScreen extends StatelessWidget {
                 );
               }).toList(),
             ),
+      bottomNavigationBar: const FooterStrip(),
     );
   }
 }
